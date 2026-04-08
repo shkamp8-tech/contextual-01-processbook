@@ -164,6 +164,22 @@ body.grabbing { cursor: grabbing; }
 }
 .card__link:hover { text-decoration: underline; }
 
+/* ── Small card variant ── */
+.card--small {
+  width: 200px;
+}
+.card--small .card__body {
+  padding: 12px 14px 10px;
+  gap: 6px;
+}
+.card--small .card__title {
+  font-size: 0.85rem;
+}
+.card--small .card__badge {
+  font-size: 0.6rem;
+  padding: 2px 8px;
+}
+
 /* ── Minimap ── */
 .minimap {
   position: fixed;

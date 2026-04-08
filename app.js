@@ -25,11 +25,23 @@
       x: 620,
       y: 200,
     },
+    {
+      id: 'oldschool',
+      title: 'Old School Projects',
+      phase: 'Reflection',
+      desc: '',
+      link: '',
+      date: '',
+      x: 200,
+      y: 420,
+      small: true,
+    },
   ];
 
   // Connections between cards (by id)
   const CONNECTIONS = [
     ['fascination', 'wordweb'],
+    ['fascination', 'oldschool'],
   ];
 
   const PHASE_COLORS = {
@@ -209,8 +221,12 @@
       const from = CARDS.find(c => c.id === fromId);
       const to   = CARDS.find(c => c.id === toId);
       if (!from || !to) return;
-      const x1 = from.x + 320, y1 = from.y + 100;
-      const x2 = to.x,         y2 = to.y + 100;
+      const fw = from.small ? 200 : 320;
+      const tw = to.small ? 200 : 320;
+      const fh = from.small ? 60 : 100;
+      const th = to.small ? 60 : 100;
+      const x1 = from.x + fw / 2, y1 = from.y + fh;
+      const x2 = to.x + tw / 2,   y2 = to.y + th;
       html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" />`;
     });
     html += '</svg>';
@@ -221,8 +237,10 @@
       const linkHtml = card.link
         ? `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">View research ↗</a>`
         : '';
+      const smallClass = card.small ? ' card--small' : '';
+      const cardWidth = card.small ? 200 : 320;
       html += `
-      <div class="card" style="left:${card.x}px; top:${card.y}px;">
+      <div class="card${smallClass}" style="left:${card.x}px; top:${card.y}px;">
         <div class="card__bar" style="background:${color}"></div>
         <div class="card__body">
           <h3 class="card__title">${sanitize(card.title)}</h3>
