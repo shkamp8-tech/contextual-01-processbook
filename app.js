@@ -217,7 +217,7 @@
     let html = '';
 
     // SVG connectors
-    html += '<svg class="connectors" width="0" height="0">';
+    html += '<svg class="connectors" style="position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:1;overflow:visible;">';
     CONNECTIONS.forEach(([fromId, toId]) => {
       const from = CARDS.find(c => c.id === fromId);
       const to   = CARDS.find(c => c.id === toId);
