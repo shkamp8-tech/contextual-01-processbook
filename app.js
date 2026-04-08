@@ -36,24 +36,12 @@
       y: 20,
       small: true,
     },
-    {
-      id: 'reflections',
-      title: 'Reflections',
-      phase: 'Reflection',
-      desc: '',
-      link: '',
-      date: '',
-      x: 850,
-      y: 20,
-      small: true,
-    },
   ];
 
   // Connections between cards (by id)
   const CONNECTIONS = [
     ['fascination', 'wordweb'],
     ['oldschool', 'wordweb'],
-    ['reflections', 'wordweb'],
   ];
 
   const PHASE_COLORS = {
@@ -236,10 +224,14 @@
       if (!from || !to) return;
       const fw = from.small ? 200 : 320;
       const tw = to.small ? 200 : 320;
-      const fh = from.small ? 60 : 100;
-      const th = to.small ? 60 : 100;
-      const x1 = from.x + fw / 2, y1 = from.y + fh;
-      const x2 = to.x + tw / 2,   y2 = to.y + th;
+      const fh = from.small ? 80 : 200;
+
+      // From: bottom center of 'from' card
+      const x1 = from.x + fw / 2;
+      const y1 = from.y + fh;
+      // To: top center of 'to' card
+      const x2 = to.x + tw / 2;
+      const y2 = to.y;
       html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" />`;
     });
     html += '</svg>';
