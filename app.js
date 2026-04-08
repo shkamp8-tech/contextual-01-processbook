@@ -1,6 +1,6 @@
 /* ========================================
-   PROCESBOEK – APP.JS
-   Digitaal procesboek / canvas
+   PROCESS BOOK – APP.JS
+   Digital process book / canvas
    ======================================== */
 
 (() => {
@@ -11,17 +11,17 @@
   const THEME_KEY   = 'procesboek_theme';
 
   const PHASES = [
-    { name: 'Onderzoek',  color: 'var(--phase-onderzoek)',  hex: '#007aff' },
-    { name: 'Concepting', color: 'var(--phase-concepting)', hex: '#af52de' },
-    { name: 'Ontwerp',    color: 'var(--phase-ontwerp)',    hex: '#ff9500' },
-    { name: 'Prototype',  color: 'var(--phase-prototype)',  hex: '#30d158' },
-    { name: 'Testen',     color: 'var(--phase-testen)',     hex: '#ff3b30' },
-    { name: 'Reflectie',  color: 'var(--phase-reflectie)',  hex: '#5ac8fa' },
+    { name: 'Research',    color: 'var(--phase-onderzoek)',  hex: '#007aff' },
+    { name: 'Concepting',  color: 'var(--phase-concepting)', hex: '#af52de' },
+    { name: 'Design',      color: 'var(--phase-ontwerp)',    hex: '#ff9500' },
+    { name: 'Prototype',   color: 'var(--phase-prototype)',  hex: '#30d158' },
+    { name: 'Testing',     color: 'var(--phase-testen)',     hex: '#ff3b30' },
+    { name: 'Reflection',  color: 'var(--phase-reflectie)',  hex: '#5ac8fa' },
   ];
 
   // ── State ──────────────────────────────
   let cards       = loadCards();
-  let activePhase = 'Alles';
+  let activePhase = 'All';
   let editingId   = null;
 
   // ── DOM refs ───────────────────────────
@@ -62,17 +62,17 @@
   const DEFAULT_CARDS = [
     {
       id: 'seed_fascinatie',
-      title: 'Fascinatie Onderzoek',
-      phase: 'Onderzoek',
-      desc: 'Mijn eerste onderzoek naar mijn fascinatie. Dit heeft de basis gelegd voor het verdere proces.',
+      title: 'Fascination Research',
+      phase: 'Research',
+      desc: 'My initial research into my fascination. This laid the foundation for the rest of the process.',
       link: 'https://shkamp8-tech.github.io/fascination-project-research/',
       date: '2026-04-08',
     },
     {
       id: 'seed_wordweb',
       title: 'Wordweb',
-      phase: 'Onderzoek',
-      desc: 'Op basis van het fascinatie-onderzoek een wordweb gemaakt om verbanden en thema\'s te verkennen.',
+      phase: 'Research',
+      desc: 'Based on the fascination research, I created a wordweb to explore connections and themes.',
       link: 'https://shkamp8-tech.github.io/wordweb/',
       date: '2026-04-08',
     },
@@ -109,7 +109,7 @@
   function formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   function sanitize(str) {
@@ -124,8 +124,8 @@
     PHASES.forEach(p => counts[p.name] = 0);
     cards.forEach(c => { if (counts[c.phase] !== undefined) counts[c.phase]++; });
 
-    let html = `<li class="sidebar__item sidebar__item--all ${activePhase === 'Alles' ? 'sidebar__item--active' : ''}" data-phase="Alles">
-      📋 Alles <span class="sidebar__count">${cards.length}</span>
+    let html = `<li class="sidebar__item sidebar__item--all ${activePhase === 'All' ? 'sidebar__item--active' : ''}" data-phase="All">
+      📋 All <span class="sidebar__count">${cards.length}</span>
     </li>`;
 
     PHASES.forEach(p => {
@@ -149,15 +149,15 @@
 
   // ── Render canvas ──────────────────────
   function renderCanvas() {
-    const filtered = activePhase === 'Alles'
+    const filtered = activePhase === 'All'
       ? cards
       : cards.filter(c => c.phase === activePhase);
 
     if (filtered.length === 0) {
       canvas.innerHTML = `
         <div class="canvas__empty">
-          <h2>Nog geen kaarten</h2>
-          <p>Klik op <strong>+ Kaart</strong> om je eerste onderzoek of processtap toe te voegen.</p>
+          <h2>No cards yet</h2>
+          <p>Click <strong>+ Card</strong> to add your first research or process step.</p>
         </div>`;
       return;
     }
@@ -168,7 +168,7 @@
     canvas.innerHTML = filtered.map(card => {
       const color = phaseColor(card.phase);
       const linkHtml = card.link
-        ? `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">Bekijk onderzoek ↗</a>`
+        ? `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">View research ↗</a>`
         : '';
       const dateHtml = card.date ? formatDate(card.date) : '';
 
@@ -178,8 +178,8 @@
         <div class="card__header">
           <h3 class="card__title">${sanitize(card.title)}</h3>
           <div class="card__actions">
-            <button class="btn btn--small" data-edit="${card.id}" title="Bewerken">✏️</button>
-            <button class="btn btn--small btn--danger" data-delete="${card.id}" title="Verwijderen">🗑️</button>
+            <button class="btn btn--small" data-edit="${card.id}" title="Edit">✏️</button>
+            <button class="btn btn--small btn--danger" data-delete="${card.id}" title="Delete">🗑️</button>
           </div>
         </div>
         <span class="card__phase-badge" style="background:${color}">${sanitize(card.phase)}</span>
@@ -217,14 +217,14 @@
     modalOverlay.classList.remove('modal-overlay--visible');
     cardForm.reset();
     editingId = null;
-    modalTitle.textContent = 'Nieuwe kaart';
+    modalTitle.textContent = 'New Card';
   }
 
   function openEditModal(id) {
     const card = cards.find(c => c.id === id);
     if (!card) return;
     editingId = id;
-    modalTitle.textContent = 'Kaart bewerken';
+    modalTitle.textContent = 'Edit Card';
     inputTitle.value = card.title;
     inputPhase.value = card.phase;
     inputDesc.value  = card.desc || '';
@@ -261,7 +261,7 @@
   }
 
   function deleteCard(id) {
-    if (!confirm('Weet je zeker dat je deze kaart wilt verwijderen?')) return;
+    if (!confirm('Are you sure you want to delete this card?')) return;
     cards = cards.filter(c => c.id !== id);
     saveCards();
     renderSidebar();
