@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procesboek – Contextual 01</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <h1 class="topbar__title">📘 Procesboek</h1>
+    <div class="topbar__actions">
+      <button id="addCardBtn" class="btn btn--primary" title="Nieuwe kaart toevoegen">+ Kaart</button>
+      <button id="themeToggle" class="btn btn--icon" title="Wissel thema">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Sidebar navigation -->
+  <aside class="sidebar" id="sidebar">
+    <nav>
+      <h2 class="sidebar__heading">Fases</h2>
+      <ul class="sidebar__list" id="phaseNav">
+        <!-- Populated by JS -->
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main canvas area -->
+  <main class="canvas" id="canvas">
+    <!-- Cards are rendered here by JS -->
+  </main>
+
+  <!-- Modal for adding / editing cards -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 class="modal__title" id="modalTitle">Nieuwe kaart</h2>
+      <form id="cardForm">
+        <label>
+          Titel
+          <input type="text" id="inputTitle" required placeholder="Bijv. Deskresearch">
+        </label>
+        <label>
+          Fase
+          <select id="inputPhase">
+            <option value="Onderzoek">Onderzoek</option>
+            <option value="Concepting">Concepting</option>
+            <option value="Ontwerp">Ontwerp</option>
+            <option value="Prototype">Prototype</option>
+            <option value="Testen">Testen</option>
+            <option value="Reflectie">Reflectie</option>
+          </select>
+        </label>
+        <label>
+          Beschrijving
+          <textarea id="inputDesc" rows="3" placeholder="Kort overzicht…"></textarea>
+        </label>
+        <label>
+          Link (optioneel)
+          <input type="url" id="inputLink" placeholder="https://…">
+        </label>
+        <label>
+          Datum
+          <input type="date" id="inputDate">
+        </label>
+        <div class="modal__actions">
+          <button type="button" class="btn" id="cancelBtn">Annuleren</button>
+          <button type="submit" class="btn btn--primary" id="saveBtn">Opslaan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
