@@ -9,12 +9,24 @@
       id: 'fascination',
       title: 'Fascination Research',
       phase: 'Research',
-      desc: 'This project is an interactive light installation where the user controls 21 individual mirrors to discover patterns, outputs, and the balance between order, chaos, control, and unpredictability.',
+      desc: '',
       link: 'https://shkamp8-tech.github.io/fascination-project-research/',
       date: '2026-04-08',
       pin: '0001',
       x: 100,
       y: 100,
+    },
+    {
+      id: 'fascination-info',
+      title: '',
+      phase: 'Research',
+      desc: 'This project is an interactive light installation where the user controls 21 individual mirrors to discover patterns, outputs, and the balance between order, chaos, control, and unpredictability.',
+      link: '',
+      date: '',
+      pin: '',
+      x: 100,
+      y: 420,
+      info: true,
     },
     {
       id: 'wordweb',
@@ -25,7 +37,19 @@
       date: '2026-04-08',
       pin: '0002',
       x: 550,
-      y: 450,
+      y: 550,
+    },
+    {
+      id: 'wordweb-preview',
+      title: 'Wordweb Visualization',
+      phase: '',
+      desc: '',
+      link: 'https://shkamp8-tech.github.io/wordweb/',
+      date: '',
+      pin: '',
+      x: 950,
+      y: 400,
+      iframe: 'https://shkamp8-tech.github.io/wordweb/',
     },
     {
       id: 'oldschool',
@@ -41,10 +65,13 @@
     },
   ];
 
-  // Connections between cards (by id)
+  // Connections: [fromId, toId, fromSide, toSide]
+  // sides: 'bottom', 'top', 'left', 'right'
   const CONNECTIONS = [
-    ['fascination', 'wordweb'],
-    ['oldschool', 'wordweb'],
+    ['fascination', 'wordweb', 'bottom', 'top'],
+    ['fascination', 'fascination-info', 'bottom', 'top'],
+    ['oldschool', 'wordweb', 'bottom', 'top'],
+    ['wordweb', 'wordweb-preview', 'right', 'left'],
   ];
 
   const PHASE_COLORS = {
@@ -221,6 +248,32 @@
     let cardsHtml = '';
     CARDS.forEach(card => {
       const color = PHASE_COLORS[card.phase] || 'var(--text-muted)';
+
+      // Iframe preview card
+      if (card.iframe) {
+        cardsHtml += `
+        <div class="card card--preview" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
+          <div class="card__iframe-wrap">
+            <iframe src="${sanitize(card.iframe)}" loading="lazy"></iframe>
+            <a class="card__iframe-overlay" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">
+              <span class="card__iframe-label">${sanitize(card.title)} ↗</span>
+            </a>
+          </div>
+        </div>`;
+        return;
+      }
+
+      // Info box card
+      if (card.info) {
+        cardsHtml += `
+        <div class="card card--info" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
+          <div class="card__body">
+            <p class="card__desc">${sanitize(card.desc)}</p>
+          </div>
+        </div>`;
+        return;
+      }
+
       const linkHtml = card.link
         ? `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">View research ↗</a>`
         : '';
@@ -242,28 +295,47 @@
     });
     canvas.innerHTML = cardsHtml;
 
-    // Now measure actual card heights and draw connectors
+    // Measure actual card sizes and draw connectors
     requestAnimationFrame(() => {
       let svgHtml = '<svg class="connectors" style="position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:1;overflow:visible;">';
-      CONNECTIONS.forEach(([fromId, toId]) => {
+      CONNECTIONS.forEach(([fromId, toId, fromSide, toSide]) => {
         const from = CARDS.find(c => c.id === fromId);
         const to   = CARDS.find(c => c.id === toId);
         if (!from || !to) return;
 
         const fromEl = document.getElementById('card-' + fromId);
         const toEl   = document.getElementById('card-' + toId);
-        const fromW  = fromEl ? fromEl.offsetWidth : (from.small ? 200 : 320);
-        const fromH  = fromEl ? fromEl.offsetHeight : 200;
-        const toW    = toEl ? toEl.offsetWidth : (to.small ? 200 : 320);
+        const fw = fromEl ? fromEl.offsetWidth : 320;
+        const fh = fromEl ? fromEl.offsetHeight : 200;
+        const tw = toEl ? toEl.offsetWidth : 320;
+        const th = toEl ? toEl.offsetHeight : 200;
 
-        // From: bottom center → To: top center
-        const x1 = from.x + fromW / 2;
-        const y1 = from.y + fromH;
-        const x2 = to.x + toW / 2;
-        const y2 = to.y;
+        // Calculate anchor points based on side
+        let x1, y1, x2, y2;
+        if (fromSide === 'bottom') { x1 = from.x + fw / 2; y1 = from.y + fh; }
+        else if (fromSide === 'top') { x1 = from.x + fw / 2; y1 = from.y; }
+        else if (fromSide === 'right') { x1 = from.x + fw; y1 = from.y + fh / 2; }
+        else if (fromSide === 'left') { x1 = from.x; y1 = from.y + fh / 2; }
 
-        const midY = (y1 + y2) / 2;
-        svgHtml += `<path d="M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}" />`;
+        if (toSide === 'top') { x2 = to.x + tw / 2; y2 = to.y; }
+        else if (toSide === 'bottom') { x2 = to.x + tw / 2; y2 = to.y + th; }
+        else if (toSide === 'left') { x2 = to.x; y2 = to.y + th / 2; }
+        else if (toSide === 'right') { x2 = to.x + tw; y2 = to.y + th / 2; }
+
+        // Bezier control points based on direction
+        let cx1, cy1, cx2, cy2;
+        const dist = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) * 0.4;
+        if (fromSide === 'bottom') { cx1 = x1; cy1 = y1 + dist; }
+        else if (fromSide === 'top') { cx1 = x1; cy1 = y1 - dist; }
+        else if (fromSide === 'right') { cx1 = x1 + dist; cy1 = y1; }
+        else if (fromSide === 'left') { cx1 = x1 - dist; cy1 = y1; }
+
+        if (toSide === 'top') { cx2 = x2; cy2 = y2 - dist; }
+        else if (toSide === 'bottom') { cx2 = x2; cy2 = y2 + dist; }
+        else if (toSide === 'left') { cx2 = x2 - dist; cy2 = y2; }
+        else if (toSide === 'right') { cx2 = x2 + dist; cy2 = y2; }
+
+        svgHtml += `<path d="M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}" />`;
       });
       svgHtml += '</svg>';
       canvas.insertAdjacentHTML('afterbegin', svgHtml);
