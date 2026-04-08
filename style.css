@@ -188,36 +188,29 @@ body.grabbing { cursor: grabbing; }
   line-height: 1.55;
 }
 
-/* ── Preview / iframe card variant ── */
+/* ── Preview / image card variant ── */
 .card--preview {
   width: 420px;
   padding: 0;
-}
-.card__iframe-wrap {
   position: relative;
-  width: 100%;
-  height: 320px;
-  overflow: hidden;
-  border-radius: 15px;
 }
-.card__iframe-wrap iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  pointer-events: none;
-}
-.card__iframe-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  padding: 12px 14px;
-  background: linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 50%);
+.card--preview > a,
+.card--preview > div {
+  display: block;
   text-decoration: none;
-  cursor: pointer;
+  color: inherit;
+  position: relative;
 }
-.card__iframe-label {
+.card__image {
+  display: block;
+  width: 100%;
+  border-radius: 15px;
+  object-fit: cover;
+}
+.card__image-label {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
   font-size: 0.78rem;
   font-weight: 600;
   color: #fff;
@@ -225,6 +218,7 @@ body.grabbing { cursor: grabbing; }
   backdrop-filter: blur(8px);
   padding: 4px 10px;
   border-radius: 6px;
+  pointer-events: none;
 }
 
 /* ── Small card variant ── */

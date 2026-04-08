@@ -49,7 +49,7 @@
       pin: '',
       x: 950,
       y: 400,
-      iframe: 'https://shkamp8-tech.github.io/wordweb/',
+      image: 'assets/wordweb.png',
     },
     {
       id: 'oldschool',
@@ -249,16 +249,18 @@
     CARDS.forEach(card => {
       const color = PHASE_COLORS[card.phase] || 'var(--text-muted)';
 
-      // Iframe preview card
-      if (card.iframe) {
+      // Image preview card
+      if (card.image) {
+        const linkOpen = card.link
+          ? `<a href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">`
+          : '<div>';
+        const linkClose = card.link ? '</a>' : '</div>';
         cardsHtml += `
         <div class="card card--preview" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
-          <div class="card__iframe-wrap">
-            <iframe src="${sanitize(card.iframe)}" loading="lazy"></iframe>
-            <a class="card__iframe-overlay" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">
-              <span class="card__iframe-label">${sanitize(card.title)} ↗</span>
-            </a>
-          </div>
+          ${linkOpen}
+            <img class="card__image" src="${sanitize(card.image)}" alt="${sanitize(card.title)}" />
+            <span class="card__image-label">${sanitize(card.title)} ${card.link ? '↗' : ''}</span>
+          ${linkClose}
         </div>`;
         return;
       }
