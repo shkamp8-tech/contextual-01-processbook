@@ -58,12 +58,37 @@
     setTheme(current === 'dark' ? 'light' : 'dark');
   }
 
+  // ── Default cards (seeded on first visit) ──
+  const DEFAULT_CARDS = [
+    {
+      id: 'seed_fascinatie',
+      title: 'Fascinatie Onderzoek',
+      phase: 'Onderzoek',
+      desc: 'Mijn eerste onderzoek naar mijn fascinatie. Dit heeft de basis gelegd voor het verdere proces.',
+      link: 'https://shkamp8-tech.github.io/fascination-project-research/',
+      date: '2026-04-08',
+    },
+    {
+      id: 'seed_wordweb',
+      title: 'Wordweb',
+      phase: 'Onderzoek',
+      desc: 'Op basis van het fascinatie-onderzoek een wordweb gemaakt om verbanden en thema\'s te verkennen.',
+      link: 'https://shkamp8-tech.github.io/wordweb/',
+      date: '2026-04-08',
+    },
+  ];
+
   // ── Persistence ────────────────────────
   function loadCards() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && saved.length > 0) return saved;
+      // Seed defaults on first visit
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CARDS));
+      return [...DEFAULT_CARDS];
     } catch {
-      return [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_CARDS));
+      return [...DEFAULT_CARDS];
     }
   }
 
