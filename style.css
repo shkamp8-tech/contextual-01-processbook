@@ -17,7 +17,7 @@
   --phase-prototype: #30d158;
   --phase-testing: #ff3b30;
   --phase-reflection: #5ac8fa;
-  --phase-analysis: #ff6b9d;
+  --phase-analysis: #8e8e93;
 }
 :root[data-theme="dark"] {
   --bg: #111113;
@@ -37,7 +37,7 @@
   --phase-prototype: #30d158;
   --phase-testing: #ff453a;
   --phase-reflection: #64d2ff;
-  --phase-analysis: #ff6b9d;
+  --phase-analysis: #a1a1a6;
 }
 
 /* ── Reset ── */
@@ -109,10 +109,10 @@ body.grabbing { cursor: grabbing; }
   pointer-events: none;
   z-index: 1;
 }
-.connectors line {
+.connectors path {
   stroke: var(--connector);
   stroke-width: 2;
-  stroke-dasharray: 6 4;
+  fill: none;
 }
 
 /* ── Card ── */

@@ -40,7 +40,6 @@
 
   // Connections between cards (by id)
   const CONNECTIONS = [
-    ['fascination', 'wordweb'],
     ['oldschool', 'wordweb'],
   ];
 
@@ -232,7 +231,9 @@
       // To: top center of 'to' card
       const x2 = to.x + tw / 2;
       const y2 = to.y;
-      html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" />`;
+      // Smooth cubic bezier curve
+      const midY = (y1 + y2) / 2;
+      html += `<path d="M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}" />`;
     });
     html += '</svg>';
 
