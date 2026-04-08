@@ -7,7 +7,7 @@
   'use strict';
 
   // ── Constants ──────────────────────────
-  const STORAGE_KEY = 'procesboek_cards';
+  const STORAGE_KEY = 'processbook_cards_v2';
   const THEME_KEY   = 'procesboek_theme';
 
   const PHASES = [
