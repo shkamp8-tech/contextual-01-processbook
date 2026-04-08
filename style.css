@@ -17,6 +17,7 @@
   --phase-prototype: #30d158;
   --phase-testing: #ff3b30;
   --phase-reflection: #5ac8fa;
+  --phase-analysis: #ff6b9d;
 }
 :root[data-theme="dark"] {
   --bg: #111113;
@@ -36,6 +37,7 @@
   --phase-prototype: #30d158;
   --phase-testing: #ff453a;
   --phase-reflection: #64d2ff;
+  --phase-analysis: #ff6b9d;
 }
 
 /* ── Reset ── */

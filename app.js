@@ -28,12 +28,12 @@
     {
       id: 'oldschool',
       title: 'Old School Projects',
-      phase: 'Reflection',
+      phase: 'Analysis',
       desc: '',
       link: '',
       date: '',
-      x: 200,
-      y: 420,
+      x: 620,
+      y: 20,
       small: true,
     },
   ];
@@ -41,7 +41,7 @@
   // Connections between cards (by id)
   const CONNECTIONS = [
     ['fascination', 'wordweb'],
-    ['fascination', 'oldschool'],
+    ['oldschool', 'wordweb'],
   ];
 
   const PHASE_COLORS = {
@@ -51,6 +51,7 @@
     'Prototype':  'var(--phase-prototype)',
     'Testing':    'var(--phase-testing)',
     'Reflection': 'var(--phase-reflection)',
+    'Analysis':   'var(--phase-analysis)',
   };
 
   // ════════════════════════════════════════
