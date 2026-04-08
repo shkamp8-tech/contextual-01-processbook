@@ -1,3 +1,80 @@
+/* ── Lockscreen ── */
+.lockscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  transition: opacity 0.4s, visibility 0.4s;
+}
+.lockscreen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.lock {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 48px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  max-width: 400px;
+  width: 90%;
+}
+.lock__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+.lock__inputs {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.lock__digit {
+  width: 64px;
+  height: 72px;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-align: center;
+  caret-color: var(--accent);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.lock__digit:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,113,227,0.18);
+}
+.lock__digit.shake {
+  animation: shake 0.4s;
+}
+.lock__hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.lock__error {
+  font-size: 0.78rem;
+  color: #ff3b30;
+  margin-top: 10px;
+  min-height: 1.2em;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
 /* ── Theme variables ── */
 :root[data-theme="light"] {
   --bg: #eaeaea;

@@ -7,6 +7,21 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Access code screen -->
+  <div class="lockscreen" id="lockscreen">
+    <div class="lock">
+      <h2 class="lock__title">ACCESS CODE</h2>
+      <div class="lock__inputs">
+        <input class="lock__digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" autofocus />
+        <input class="lock__digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" />
+        <input class="lock__digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" />
+        <input class="lock__digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" />
+      </div>
+      <p class="lock__hint">Ask the creator for the access code</p>
+      <p class="lock__error" id="lockError"></p>
+    </div>
+  </div>
+
   <header class="topbar">
     <h1>📘 Process Book</h1>
     <div class="topbar__right">

@@ -2,6 +2,48 @@
   'use strict';
 
   // ════════════════════════════════════════
+  //  ACCESS CODE GATE
+  // ════════════════════════════════════════
+  const ACCESS_PIN = '0003';
+  const lockscreen = document.getElementById('lockscreen');
+  const lockDigits = lockscreen.querySelectorAll('.lock__digit');
+  const lockError  = document.getElementById('lockError');
+
+  // If already unlocked this session, skip
+  if (sessionStorage.getItem('pb_unlocked') === '1') {
+    lockscreen.classList.add('hidden');
+  }
+
+  lockDigits.forEach((input, i) => {
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/[^0-9]/g, '');
+      if (input.value && i < lockDigits.length - 1) {
+        lockDigits[i + 1].focus();
+      }
+      // Check if all filled
+      const code = Array.from(lockDigits).map(d => d.value).join('');
+      if (code.length === 4) {
+        if (code === ACCESS_PIN) {
+          sessionStorage.setItem('pb_unlocked', '1');
+          lockscreen.classList.add('hidden');
+        } else {
+          lockError.textContent = 'Incorrect code';
+          lockDigits.forEach(d => {
+            d.classList.add('shake');
+            setTimeout(() => { d.value = ''; d.classList.remove('shake'); }, 400);
+          });
+          setTimeout(() => { lockDigits[0].focus(); lockError.textContent = ''; }, 500);
+        }
+      }
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && i > 0) {
+        lockDigits[i - 1].focus();
+      }
+    });
+  });
+
+  // ════════════════════════════════════════
   //  DATA – hardcoded cards
   // ════════════════════════════════════════
   const CARDS = [
@@ -63,6 +105,42 @@
       y: 120,
       small: true,
     },
+    {
+      id: 'interview',
+      title: 'Interview',
+      phase: 'Research',
+      desc: '',
+      link: '',
+      date: '2026-04-08',
+      pin: '',
+      x: 100,
+      y: 700,
+      small: true,
+    },
+    {
+      id: 'notes',
+      title: 'Notes',
+      phase: 'Research',
+      desc: '',
+      link: '',
+      date: '2026-04-08',
+      pin: '',
+      x: 320,
+      y: 700,
+      small: true,
+    },
+    {
+      id: 'theme',
+      title: 'Theme',
+      phase: 'Concepting',
+      desc: '',
+      link: '',
+      date: '2026-04-08',
+      pin: '',
+      x: 540,
+      y: 850,
+      small: true,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -72,6 +150,9 @@
     ['fascination', 'fascination-info', 'bottom', 'top'],
     ['oldschool', 'wordweb', 'bottom', 'top'],
     ['wordweb', 'wordweb-preview', 'right', 'left'],
+    ['fascination-info', 'interview', 'bottom', 'top'],
+    ['fascination-info', 'notes', 'bottom', 'top'],
+    ['wordweb', 'theme', 'bottom', 'top'],
   ];
 
   const PHASE_COLORS = {
