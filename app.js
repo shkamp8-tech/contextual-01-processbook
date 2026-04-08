@@ -12,8 +12,8 @@
       desc: 'My initial research into my fascination. This laid the foundation for the rest of the process.',
       link: 'https://shkamp8-tech.github.io/fascination-project-research/',
       date: '2026-04-08',
-      x: 200,
-      y: 200,
+      x: 100,
+      y: 250,
     },
     {
       id: 'wordweb',
@@ -22,8 +22,8 @@
       desc: 'Based on the fascination research, I created a wordweb to explore connections and themes.',
       link: 'https://shkamp8-tech.github.io/wordweb/',
       date: '2026-04-08',
-      x: 620,
-      y: 200,
+      x: 550,
+      y: 350,
     },
     {
       id: 'oldschool',
@@ -33,13 +33,14 @@
       link: '',
       date: '',
       x: 620,
-      y: 20,
+      y: 120,
       small: true,
     },
   ];
 
   // Connections between cards (by id)
   const CONNECTIONS = [
+    ['fascination', 'wordweb'],
     ['oldschool', 'wordweb'],
   ];
 
