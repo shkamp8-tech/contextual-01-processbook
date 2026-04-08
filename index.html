@@ -7,72 +7,23 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Top bar -->
   <header class="topbar">
-    <h1 class="topbar__title">📘 Process Book</h1>
-    <div class="topbar__actions">
-      <button id="addCardBtn" class="btn btn--primary" title="Add new card">+ Card</button>
-      <button id="themeToggle" class="btn btn--icon" title="Toggle theme">
-        <span id="themeIcon">🌙</span>
-      </button>
+    <h1>📘 Process Book</h1>
+    <div class="topbar__right">
+      <span class="topbar__zoom" id="zoomLabel">100%</span>
+      <button class="btn-icon" id="zoomIn" title="Zoom in">+</button>
+      <button class="btn-icon" id="zoomOut" title="Zoom out">−</button>
+      <button class="btn-icon" id="resetView" title="Reset view">⌂</button>
+      <button class="btn-icon" id="themeToggle" title="Toggle theme">🌙</button>
     </div>
   </header>
 
-  <!-- Sidebar navigation -->
-  <aside class="sidebar" id="sidebar">
-    <nav>
-      <h2 class="sidebar__heading">Phases</h2>
-      <ul class="sidebar__list" id="phaseNav">
-        <!-- Populated by JS -->
-      </ul>
-    </nav>
-  </aside>
-
-  <!-- Main canvas area -->
-  <main class="canvas" id="canvas">
-    <!-- Cards are rendered here by JS -->
-  </main>
-
-  <!-- Modal for adding / editing cards -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <h2 class="modal__title" id="modalTitle">New Card</h2>
-      <form id="cardForm">
-        <label>
-          Title
-          <input type="text" id="inputTitle" required placeholder="e.g. Desk Research">
-        </label>
-        <label>
-          Phase
-          <select id="inputPhase">
-            <option value="Research">Research</option>
-            <option value="Concepting">Concepting</option>
-            <option value="Design">Design</option>
-            <option value="Prototype">Prototype</option>
-            <option value="Testing">Testing</option>
-            <option value="Reflection">Reflection</option>
-          </select>
-        </label>
-        <label>
-          Description
-          <textarea id="inputDesc" rows="3" placeholder="Brief overview…"></textarea>
-        </label>
-        <label>
-          Link (optional)
-          <input type="url" id="inputLink" placeholder="https://…">
-        </label>
-        <label>
-          Date
-          <input type="date" id="inputDate">
-        </label>
-        <div class="modal__actions">
-          <button type="button" class="btn" id="cancelBtn">Cancel</button>
-          <button type="submit" class="btn btn--primary" id="saveBtn">Save</button>
-        </div>
-      </form>
-    </div>
+  <div class="viewport" id="viewport">
+    <div class="canvas" id="canvas"></div>
   </div>
+
+  <div class="minimap" id="minimap"></div>
+  <div class="hint">Scroll to zoom · Drag to pan</div>
 
   <script src="app.js"></script>
 </body>
