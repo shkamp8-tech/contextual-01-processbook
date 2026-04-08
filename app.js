@@ -198,6 +198,8 @@
   // ════════════════════════════════════════
   //  PAN & ZOOM
   // ════════════════════════════════════════
+  let editMode = false;
+  let isDragging = false;
   const viewport  = document.getElementById('viewport');
   const canvas    = document.getElementById('canvas');
   const zoomLabel = document.getElementById('zoomLabel');
@@ -213,9 +215,11 @@
     updateMinimap();
   }
 
-  // Mouse pan
+  // Mouse pan — only when not dragging a card
   viewport.addEventListener('mousedown', (e) => {
-    if (e.target.closest('.card')) return;
+    if (isDragging) return;
+    if (editMode && e.target.closest('.card')) return;
+    if (!editMode && e.target.closest('.card')) return;
     isPanning = true;
     startX = e.clientX - panX;
     startY = e.clientY - panY;
@@ -393,48 +397,8 @@
 
     // Measure actual card sizes and draw connectors
     requestAnimationFrame(() => {
-      let svgHtml = '<svg class="connectors" style="position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:1;overflow:visible;">';
-      CONNECTIONS.forEach(([fromId, toId, fromSide, toSide]) => {
-        const from = CARDS.find(c => c.id === fromId);
-        const to   = CARDS.find(c => c.id === toId);
-        if (!from || !to) return;
-
-        const fromEl = document.getElementById('card-' + fromId);
-        const toEl   = document.getElementById('card-' + toId);
-        const fw = fromEl ? fromEl.offsetWidth : 320;
-        const fh = fromEl ? fromEl.offsetHeight : 200;
-        const tw = toEl ? toEl.offsetWidth : 320;
-        const th = toEl ? toEl.offsetHeight : 200;
-
-        // Calculate anchor points based on side
-        let x1, y1, x2, y2;
-        if (fromSide === 'bottom') { x1 = from.x + fw / 2; y1 = from.y + fh; }
-        else if (fromSide === 'top') { x1 = from.x + fw / 2; y1 = from.y; }
-        else if (fromSide === 'right') { x1 = from.x + fw; y1 = from.y + fh / 2; }
-        else if (fromSide === 'left') { x1 = from.x; y1 = from.y + fh / 2; }
-
-        if (toSide === 'top') { x2 = to.x + tw / 2; y2 = to.y; }
-        else if (toSide === 'bottom') { x2 = to.x + tw / 2; y2 = to.y + th; }
-        else if (toSide === 'left') { x2 = to.x; y2 = to.y + th / 2; }
-        else if (toSide === 'right') { x2 = to.x + tw; y2 = to.y + th / 2; }
-
-        // Bezier control points based on direction
-        let cx1, cy1, cx2, cy2;
-        const dist = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) * 0.4;
-        if (fromSide === 'bottom') { cx1 = x1; cy1 = y1 + dist; }
-        else if (fromSide === 'top') { cx1 = x1; cy1 = y1 - dist; }
-        else if (fromSide === 'right') { cx1 = x1 + dist; cy1 = y1; }
-        else if (fromSide === 'left') { cx1 = x1 - dist; cy1 = y1; }
-
-        if (toSide === 'top') { cx2 = x2; cy2 = y2 - dist; }
-        else if (toSide === 'bottom') { cx2 = x2; cy2 = y2 + dist; }
-        else if (toSide === 'left') { cx2 = x2 - dist; cy2 = y2; }
-        else if (toSide === 'right') { cx2 = x2 + dist; cy2 = y2; }
-
-        svgHtml += `<path d="M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}" />`;
-      });
-      svgHtml += '</svg>';
-      canvas.insertAdjacentHTML('afterbegin', svgHtml);
+      drawConnectors();
+      setupDrag();
     });
   }
 
@@ -471,6 +435,268 @@
 
     minimap.innerHTML = html;
   }
+
+  // ════════════════════════════════════════
+  //  EDITOR MODE
+  // ════════════════════════════════════════
+  const editToggle  = document.getElementById('editToggle');
+  const addCardBtn  = document.getElementById('addCard');
+  const addConnBtn  = document.getElementById('addConn');
+  const exportBtn   = document.getElementById('exportData');
+  const ctxMenu     = document.getElementById('ctxMenu');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const cardForm    = document.getElementById('cardForm');
+  const modalTitle  = document.getElementById('modalTitle');
+  const connOverlay = document.getElementById('connOverlay');
+  const connForm    = document.getElementById('connForm');
+  let editingCardId = null; // null = new card
+  let connFromId    = null; // for "connect from here"
+
+  editToggle.addEventListener('click', () => {
+    editMode = !editMode;
+    document.body.classList.toggle('editing-mode', editMode);
+    editToggle.textContent = editMode ? '🔒 Lock' : '✏️ Edit';
+    [addCardBtn, addConnBtn, exportBtn].forEach(b => b.style.display = editMode ? '' : 'none');
+    hideCtx();
+    renderCards();
+  });
+
+  // ── Context menu ──
+  let ctxCardId = null;
+  function showCtx(x, y, cardId) {
+    ctxCardId = cardId;
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    ctxMenu.style.display = '';
+  }
+  function hideCtx() { ctxMenu.style.display = 'none'; ctxCardId = null; }
+  document.addEventListener('click', (e) => { if (!e.target.closest('.ctx-menu')) hideCtx(); });
+
+  ctxMenu.addEventListener('click', (e) => {
+    const action = e.target.dataset.action;
+    if (!action || !ctxCardId) return;
+    if (action === 'edit') openEditModal(ctxCardId);
+    if (action === 'delete') deleteCard(ctxCardId);
+    if (action === 'conn-from') { connFromId = ctxCardId; alert('Now right-click the target card and choose "Connect from here" again, or use the "+ Line" button.'); }
+    hideCtx();
+  });
+
+  // ── Card dragging ──
+  function setupDrag() {
+    if (!editMode) return;
+    document.querySelectorAll('.card').forEach(el => {
+      el.addEventListener('mousedown', onDragStart);
+      el.addEventListener('contextmenu', onCardCtx);
+    });
+  }
+
+  let dragCard = null, dragOffX = 0, dragOffY = 0;
+  function onDragStart(e) {
+    if (!editMode) return;
+    if (e.button === 2) return; // right-click
+    const el = e.target.closest('.card');
+    if (!el) return;
+    // Don't drag if clicking a link
+    if (e.target.closest('a')) return;
+    e.stopPropagation();
+    isDragging = true;
+    dragCard = el;
+    dragCard.classList.add('dragging');
+    const id = el.id.replace('card-', '');
+    const card = CARDS.find(c => c.id === id);
+    if (!card) return;
+    dragOffX = e.clientX / scale - card.x;
+    dragOffY = e.clientY / scale - card.y;
+
+    function onMove(ev) {
+      card.x = Math.round(ev.clientX / scale - dragOffX - panX / scale);
+      card.y = Math.round(ev.clientY / scale - dragOffY - panY / scale);
+      el.style.left = card.x + 'px';
+      el.style.top = card.y + 'px';
+      drawConnectors();
+      updateMinimap();
+    }
+    function onUp() {
+      isDragging = false;
+      if (dragCard) dragCard.classList.remove('dragging');
+      dragCard = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }
+
+  function onCardCtx(e) {
+    if (!editMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const el = e.target.closest('.card');
+    if (!el) return;
+    showCtx(e.clientX, e.clientY, el.id.replace('card-', ''));
+  }
+
+  // ── Draw only connectors (without re-rendering cards) ──
+  function drawConnectors() {
+    const old = canvas.querySelector('.connectors');
+    if (old) old.remove();
+    let svgHtml = '<svg class="connectors" style="position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:1;overflow:visible;">';
+    CONNECTIONS.forEach(([fromId, toId, fromSide, toSide]) => {
+      const from = CARDS.find(c => c.id === fromId);
+      const to   = CARDS.find(c => c.id === toId);
+      if (!from || !to) return;
+      const fromEl = document.getElementById('card-' + fromId);
+      const toEl   = document.getElementById('card-' + toId);
+      const fw = fromEl ? fromEl.offsetWidth : 320;
+      const fh = fromEl ? fromEl.offsetHeight : 200;
+      const tw = toEl ? toEl.offsetWidth : 320;
+      const th = toEl ? toEl.offsetHeight : 200;
+      let x1, y1, x2, y2;
+      if (fromSide === 'bottom') { x1 = from.x + fw / 2; y1 = from.y + fh; }
+      else if (fromSide === 'top') { x1 = from.x + fw / 2; y1 = from.y; }
+      else if (fromSide === 'right') { x1 = from.x + fw; y1 = from.y + fh / 2; }
+      else if (fromSide === 'left') { x1 = from.x; y1 = from.y + fh / 2; }
+      if (toSide === 'top') { x2 = to.x + tw / 2; y2 = to.y; }
+      else if (toSide === 'bottom') { x2 = to.x + tw / 2; y2 = to.y + th; }
+      else if (toSide === 'left') { x2 = to.x; y2 = to.y + th / 2; }
+      else if (toSide === 'right') { x2 = to.x + tw; y2 = to.y + th / 2; }
+      let cx1, cy1, cx2, cy2;
+      const dist = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) * 0.4;
+      if (fromSide === 'bottom') { cx1 = x1; cy1 = y1 + dist; }
+      else if (fromSide === 'top') { cx1 = x1; cy1 = y1 - dist; }
+      else if (fromSide === 'right') { cx1 = x1 + dist; cy1 = y1; }
+      else if (fromSide === 'left') { cx1 = x1 - dist; cy1 = y1; }
+      if (toSide === 'top') { cx2 = x2; cy2 = y2 - dist; }
+      else if (toSide === 'bottom') { cx2 = x2; cy2 = y2 + dist; }
+      else if (toSide === 'left') { cx2 = x2 - dist; cy2 = y2; }
+      else if (toSide === 'right') { cx2 = x2 + dist; cy2 = y2; }
+      svgHtml += `<path d="M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}" />`;
+    });
+    svgHtml += '</svg>';
+    canvas.insertAdjacentHTML('afterbegin', svgHtml);
+  }
+
+  // ── Add card modal ──
+  addCardBtn.addEventListener('click', () => openEditModal(null));
+
+  function openEditModal(id) {
+    editingCardId = id;
+    const f = cardForm;
+    if (id) {
+      modalTitle.textContent = 'Edit Card';
+      const c = CARDS.find(c => c.id === id);
+      if (!c) return;
+      f.id.value = c.id; f.id.readOnly = true;
+      f.title.value = c.title || '';
+      f.phase.value = c.phase || '';
+      f.desc.value = c.desc || '';
+      f.link.value = c.link || '';
+      f.date.value = c.date || '';
+      f.pin.value = c.pin || '';
+      f.image.value = c.image || '';
+      f.small.checked = !!c.small;
+      f.info.checked = !!c.info;
+    } else {
+      modalTitle.textContent = 'New Card';
+      f.reset();
+      f.id.readOnly = false;
+      f.id.value = 'card-' + Date.now();
+    }
+    modalOverlay.style.display = '';
+  }
+
+  document.getElementById('modalCancel').addEventListener('click', () => { modalOverlay.style.display = 'none'; });
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.style.display = 'none'; });
+
+  cardForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = cardForm;
+    const data = {
+      id: f.id.value.trim(),
+      title: f.title.value.trim(),
+      phase: f.phase.value,
+      desc: f.desc.value.trim(),
+      link: f.link.value.trim(),
+      date: f.date.value,
+      pin: f.pin.value.trim(),
+      image: f.image.value.trim() || undefined,
+      small: f.small.checked || undefined,
+      info: f.info.checked || undefined,
+    };
+    if (editingCardId) {
+      const c = CARDS.find(c => c.id === editingCardId);
+      if (c) Object.assign(c, data);
+    } else {
+      // new card — place near center of current view
+      const rect = viewport.getBoundingClientRect();
+      data.x = Math.round((-panX + rect.width / 2) / scale - 160);
+      data.y = Math.round((-panY + rect.height / 2) / scale - 100);
+      CARDS.push(data);
+    }
+    modalOverlay.style.display = 'none';
+    renderCards();
+  });
+
+  // ── Delete card ──
+  function deleteCard(id) {
+    if (!confirm('Delete card "' + id + '" and its connections?')) return;
+    const idx = CARDS.findIndex(c => c.id === id);
+    if (idx !== -1) CARDS.splice(idx, 1);
+    // Remove related connections
+    for (let i = CONNECTIONS.length - 1; i >= 0; i--) {
+      if (CONNECTIONS[i][0] === id || CONNECTIONS[i][1] === id) CONNECTIONS.splice(i, 1);
+    }
+    renderCards();
+  }
+
+  // ── Connection modal ──
+  addConnBtn.addEventListener('click', openConnModal);
+
+  function openConnModal() {
+    const opts = CARDS.map(c => `<option value="${sanitize(c.id)}">${sanitize(c.id)} – ${sanitize(c.title || c.id)}</option>`).join('');
+    document.getElementById('connFrom').innerHTML = opts;
+    document.getElementById('connTo').innerHTML = opts;
+    if (connFromId) document.getElementById('connFrom').value = connFromId;
+    connOverlay.style.display = '';
+  }
+
+  document.getElementById('connCancel').addEventListener('click', () => { connOverlay.style.display = 'none'; connFromId = null; });
+  connOverlay.addEventListener('click', (e) => { if (e.target === connOverlay) { connOverlay.style.display = 'none'; connFromId = null; } });
+
+  connForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = connForm;
+    CONNECTIONS.push([f.fromId.value, f.toId.value, f.fromSide.value, f.toSide.value]);
+    connOverlay.style.display = 'none';
+    connFromId = null;
+    renderCards();
+  });
+
+  // ── Export JSON (copy to clipboard) ──
+  exportBtn.addEventListener('click', () => {
+    const out = {
+      cards: CARDS.map(c => {
+        const o = { ...c };
+        // Clean undefined
+        Object.keys(o).forEach(k => { if (o[k] === undefined || o[k] === '') delete o[k]; });
+        return o;
+      }),
+      connections: CONNECTIONS,
+    };
+    const json = JSON.stringify(out, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      alert('JSON copied to clipboard! Paste it to me so I can update the code.');
+    }).catch(() => {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = json;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      alert('JSON copied to clipboard!');
+    });
+  });
 
   // ════════════════════════════════════════
   //  INIT

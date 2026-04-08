@@ -348,3 +348,110 @@ body.grabbing { cursor: grabbing; }
   z-index: 200;
   pointer-events: none;
 }
+
+/* ── Editor UI ── */
+.btn-text {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-text:hover { background: var(--border); }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { opacity: 0.85; }
+
+.editing-mode .card { cursor: grab; }
+.editing-mode .card.dragging { cursor: grabbing; opacity: 0.85; z-index: 100; }
+.editing-mode .card:hover { outline: 2px dashed var(--accent); outline-offset: 4px; }
+
+/* Context menu */
+.ctx-menu {
+  position: fixed;
+  z-index: 500;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 0;
+  box-shadow: var(--shadow-hover);
+  min-width: 180px;
+}
+.ctx-menu button {
+  display: block;
+  width: 100%;
+  padding: 9px 16px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+}
+.ctx-menu button:hover { background: var(--border); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 32px;
+  width: 380px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-hover);
+}
+.modal__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+.modal form { display: flex; flex-direction: column; gap: 10px; }
+.modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.modal input, .modal textarea, .modal select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+.modal input:focus, .modal textarea:focus, .modal select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0,113,227,0.15);
+}
+.modal .checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.modal .checkbox input { width: auto; }
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}

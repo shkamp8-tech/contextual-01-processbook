@@ -25,6 +25,10 @@
   <header class="topbar">
     <h1>📘 Process Book</h1>
     <div class="topbar__right">
+      <button class="btn-text" id="editToggle" title="Toggle edit mode">✏️ Edit</button>
+      <button class="btn-text btn-add" id="addCard" title="Add card" style="display:none">+ Card</button>
+      <button class="btn-text btn-add" id="addConn" title="Add connection" style="display:none">+ Line</button>
+      <button class="btn-text btn-export" id="exportData" title="Export JSON" style="display:none">💾 Export</button>
       <span class="topbar__zoom" id="zoomLabel">100%</span>
       <button class="btn-icon" id="zoomIn" title="Zoom in">+</button>
       <button class="btn-icon" id="zoomOut" title="Zoom out">−</button>
@@ -39,6 +43,68 @@
 
   <div class="minimap" id="minimap"></div>
   <div class="hint">Scroll to zoom · Drag to pan</div>
+
+  <!-- Context menu -->
+  <div class="ctx-menu" id="ctxMenu" style="display:none">
+    <button data-action="edit">✏️ Edit</button>
+    <button data-action="delete">🗑️ Delete</button>
+    <button data-action="conn-from">🔗 Connect from here</button>
+  </div>
+
+  <!-- Modal overlay for card editing -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none">
+    <div class="modal">
+      <h3 class="modal__title" id="modalTitle">Edit Card</h3>
+      <form id="cardForm" autocomplete="off">
+        <label>ID <input name="id" required /></label>
+        <label>Title <input name="title" /></label>
+        <label>Phase
+          <select name="phase">
+            <option value="">—</option>
+            <option>Research</option>
+            <option>Concepting</option>
+            <option>Design</option>
+            <option>Prototype</option>
+            <option>Testing</option>
+            <option>Reflection</option>
+            <option>Analysis</option>
+          </select>
+        </label>
+        <label>Description <textarea name="desc" rows="3"></textarea></label>
+        <label>Link <input name="link" type="url" /></label>
+        <label>Date <input name="date" type="date" /></label>
+        <label>Pin <input name="pin" /></label>
+        <label>Image path <input name="image" placeholder="assets/photo.jpg" /></label>
+        <label class="checkbox"><input name="small" type="checkbox" /> Small card</label>
+        <label class="checkbox"><input name="info" type="checkbox" /> Info text box</label>
+        <div class="modal__actions">
+          <button type="button" id="modalCancel" class="btn-text">Cancel</button>
+          <button type="submit" class="btn-text btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Connection modal -->
+  <div class="modal-overlay" id="connOverlay" style="display:none">
+    <div class="modal">
+      <h3 class="modal__title">Add Connection</h3>
+      <form id="connForm" autocomplete="off">
+        <label>From card <select name="fromId" id="connFrom"></select></label>
+        <label>From side
+          <select name="fromSide"><option>bottom</option><option>top</option><option>right</option><option>left</option></select>
+        </label>
+        <label>To card <select name="toId" id="connTo"></select></label>
+        <label>To side
+          <select name="toSide"><option>top</option><option>bottom</option><option>right</option><option>left</option></select>
+        </label>
+        <div class="modal__actions">
+          <button type="button" id="connCancel" class="btn-text">Cancel</button>
+          <button type="submit" class="btn-text btn-primary">Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
