@@ -36,12 +36,24 @@
       y: 20,
       small: true,
     },
+    {
+      id: 'reflections',
+      title: 'Reflections',
+      phase: 'Reflection',
+      desc: '',
+      link: '',
+      date: '',
+      x: 850,
+      y: 20,
+      small: true,
+    },
   ];
 
   // Connections between cards (by id)
   const CONNECTIONS = [
     ['fascination', 'wordweb'],
     ['oldschool', 'wordweb'],
+    ['reflections', 'wordweb'],
   ];
 
   const PHASE_COLORS = {
