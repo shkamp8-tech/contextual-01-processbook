@@ -166,6 +166,15 @@ body.grabbing { cursor: grabbing; }
 }
 .card__link:hover { text-decoration: underline; }
 
+.card__pin {
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Consolas', monospace;
+  padding-top: 6px;
+  opacity: 0.5;
+}
+
 /* ── Small card variant ── */
 .card--small {
   width: 200px;

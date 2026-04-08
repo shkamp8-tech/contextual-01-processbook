@@ -9,11 +9,12 @@
       id: 'fascination',
       title: 'Fascination Research',
       phase: 'Research',
-      desc: 'My initial research into my fascination. This laid the foundation for the rest of the process.',
+      desc: 'This project is an interactive light installation where the user controls 21 individual mirrors to discover patterns, outputs, and the balance between order, chaos, control, and unpredictability.',
       link: 'https://shkamp8-tech.github.io/fascination-project-research/',
       date: '2026-04-08',
+      pin: '0001',
       x: 100,
-      y: 250,
+      y: 100,
     },
     {
       id: 'wordweb',
@@ -22,8 +23,9 @@
       desc: 'Based on the fascination research, I created a wordweb to explore connections and themes.',
       link: 'https://shkamp8-tech.github.io/wordweb/',
       date: '2026-04-08',
+      pin: '0002',
       x: 550,
-      y: 350,
+      y: 450,
     },
     {
       id: 'oldschool',
@@ -32,6 +34,7 @@
       desc: '',
       link: '',
       date: '',
+      pin: '',
       x: 620,
       y: 120,
       small: true,
@@ -214,40 +217,16 @@
   }
 
   function renderCards() {
-    let html = '';
-
-    // SVG connectors
-    html += '<svg class="connectors" style="position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:1;overflow:visible;">';
-    CONNECTIONS.forEach(([fromId, toId]) => {
-      const from = CARDS.find(c => c.id === fromId);
-      const to   = CARDS.find(c => c.id === toId);
-      if (!from || !to) return;
-      const fw = from.small ? 200 : 320;
-      const tw = to.small ? 200 : 320;
-      const fh = from.small ? 80 : 200;
-
-      // From: bottom center of 'from' card
-      const x1 = from.x + fw / 2;
-      const y1 = from.y + fh;
-      // To: top center of 'to' card
-      const x2 = to.x + tw / 2;
-      const y2 = to.y;
-      // Smooth cubic bezier curve
-      const midY = (y1 + y2) / 2;
-      html += `<path d="M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}" />`;
-    });
-    html += '</svg>';
-
-    // Cards
+    // Render cards first
+    let cardsHtml = '';
     CARDS.forEach(card => {
       const color = PHASE_COLORS[card.phase] || 'var(--text-muted)';
       const linkHtml = card.link
         ? `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">View research ↗</a>`
         : '';
       const smallClass = card.small ? ' card--small' : '';
-      const cardWidth = card.small ? 200 : 320;
-      html += `
-      <div class="card${smallClass}" style="left:${card.x}px; top:${card.y}px;">
+      cardsHtml += `
+      <div class="card${smallClass}" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
         <div class="card__bar" style="background:${color}"></div>
         <div class="card__body">
           <h3 class="card__title">${sanitize(card.title)}</h3>
@@ -257,11 +236,38 @@
             <span class="card__date">${formatDate(card.date)}</span>
             ${linkHtml}
           </div>
+          ${card.pin ? `<div class="card__pin">${sanitize(card.pin)}</div>` : ''}
         </div>
       </div>`;
     });
+    canvas.innerHTML = cardsHtml;
 
-    canvas.innerHTML = html;
+    // Now measure actual card heights and draw connectors
+    requestAnimationFrame(() => {
+      let svgHtml = '<svg class="connectors" style="position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:1;overflow:visible;">';
+      CONNECTIONS.forEach(([fromId, toId]) => {
+        const from = CARDS.find(c => c.id === fromId);
+        const to   = CARDS.find(c => c.id === toId);
+        if (!from || !to) return;
+
+        const fromEl = document.getElementById('card-' + fromId);
+        const toEl   = document.getElementById('card-' + toId);
+        const fromW  = fromEl ? fromEl.offsetWidth : (from.small ? 200 : 320);
+        const fromH  = fromEl ? fromEl.offsetHeight : 200;
+        const toW    = toEl ? toEl.offsetWidth : (to.small ? 200 : 320);
+
+        // From: bottom center → To: top center
+        const x1 = from.x + fromW / 2;
+        const y1 = from.y + fromH;
+        const x2 = to.x + toW / 2;
+        const y2 = to.y;
+
+        const midY = (y1 + y2) / 2;
+        svgHtml += `<path d="M${x1},${y1} C${x1},${midY} ${x2},${midY} ${x2},${y2}" />`;
+      });
+      svgHtml += '</svg>';
+      canvas.insertAdjacentHTML('afterbegin', svgHtml);
+    });
   }
 
   // ════════════════════════════════════════
