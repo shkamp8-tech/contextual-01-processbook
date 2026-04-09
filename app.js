@@ -773,6 +773,25 @@
   }
 
   // ── Draw connectors (clickable in edit mode) ──
+  // Get reliable card dimensions — for image cards, compute from natural image size
+  function getCardSize(cardData, cardEl) {
+    if (!cardEl) return [320, 200];
+    // Image card: compute height from image natural dimensions
+    if (cardData.image) {
+      const img = cardEl.querySelector('img');
+      if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
+        const cardW = cardEl.offsetWidth || 420;
+        const cardH = cardW * (img.naturalHeight / img.naturalWidth);
+        // Add label height (~30px)
+        const label = cardEl.querySelector('.card__image-label');
+        return [cardW, cardH + (label ? 0 : 0)];
+      }
+      // Image not loaded yet — return 0 to signal "skip this connector"
+      return [cardEl.offsetWidth || 420, 0];
+    }
+    return [cardEl.offsetWidth || 320, cardEl.offsetHeight || 200];
+  }
+
   function drawConnectors() {
     const old = canvas.querySelector('.connectors');
     if (old) old.remove();
@@ -780,9 +799,6 @@
     const svg = document.createElementNS(svgNs, 'svg');
     svg.classList.add('connectors');
     svg.setAttribute('style', 'position:absolute;top:0;left:0;width:9999px;height:9999px;z-index:1;overflow:visible;pointer-events:' + (editMode ? 'auto' : 'none') + ';');
-
-    // Use getBoundingClientRect for accurate sizes (images may not be laid out yet with offsetHeight)
-    const vRect = viewport.getBoundingClientRect();
 
     CONNECTIONS.forEach(([fromId, toId, fromSide, toSide], idx) => {
       const from = CARDS.find(c => c.id === fromId);
@@ -792,13 +808,10 @@
       const toEl   = document.getElementById('card-' + toId);
       if (!fromEl || !toEl) return;
 
-      // Get actual rendered size via bounding rect, converted to canvas space
-      const fRect = fromEl.getBoundingClientRect();
-      const tRect = toEl.getBoundingClientRect();
-      const fw = fRect.width / scale;
-      const fh = fRect.height / scale;
-      const tw = tRect.width / scale;
-      const th = tRect.height / scale;
+      const [fw, fh] = getCardSize(from, fromEl);
+      const [tw, th] = getCardSize(to, toEl);
+      // Skip if an image card hasn't loaded yet (height = 0)
+      if (fh === 0 || th === 0) return;
       let x1, y1, x2, y2;
       if (fromSide === 'bottom') { x1 = from.x + fw / 2; y1 = from.y + fh; }
       else if (fromSide === 'top') { x1 = from.x + fw / 2; y1 = from.y; }
