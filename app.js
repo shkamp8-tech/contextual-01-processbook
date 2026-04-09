@@ -44,9 +44,9 @@
   });
 
   // ════════════════════════════════════════
-  //  DATA – hardcoded cards
+  //  DATA – hardcoded defaults (overridden by localStorage)
   // ════════════════════════════════════════
-  const CARDS = [
+  const DEFAULT_CARDS = [
     {
       id: 'fascination',
       title: 'Fascination Research',
@@ -157,7 +157,7 @@
 
   // Connections: [fromId, toId, fromSide, toSide]
   // sides: 'bottom', 'top', 'left', 'right'
-  const CONNECTIONS = [
+  const DEFAULT_CONNECTIONS = [
     ['fascination', 'wordweb', 'bottom', 'top'],
     ['fascination', 'fascination-photo', 'right', 'left'],
     ['fascination', 'fascination-info', 'right', 'left'],
@@ -167,6 +167,38 @@
     ['fascination-info', 'notes', 'bottom', 'top'],
     ['wordweb', 'theme', 'bottom', 'top'],
   ];
+
+  // ════════════════════════════════════════
+  //  PERSISTENCE (localStorage)
+  // ════════════════════════════════════════
+  const STORAGE_KEY = 'processbook_state';
+  let CARDS, CONNECTIONS;
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        CARDS = state.cards || [];
+        CONNECTIONS = state.connections || [];
+        return;
+      }
+    } catch (e) { /* ignore corrupt data */ }
+    // Fall back to defaults
+    CARDS = JSON.parse(JSON.stringify(DEFAULT_CARDS));
+    CONNECTIONS = JSON.parse(JSON.stringify(DEFAULT_CONNECTIONS));
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        cards: CARDS,
+        connections: CONNECTIONS,
+      }));
+    } catch (e) { /* storage full — silently fail */ }
+  }
+
+  loadState();
 
   const PHASE_COLORS = {
     'Research':   'var(--phase-research)',
@@ -517,12 +549,14 @@
     const id = el.id.replace('card-', '');
     const card = CARDS.find(c => c.id === id);
     if (!card) return;
-    dragOffX = (e.clientX - panX) / scale - card.x;
-    dragOffY = (e.clientY - panY) / scale - card.y;
+    const [sx, sy] = clientToCanvas(e.clientX, e.clientY);
+    dragOffX = sx - card.x;
+    dragOffY = sy - card.y;
 
     function onMove(ev) {
-      card.x = snapTo(Math.round((ev.clientX - panX) / scale - dragOffX));
-      card.y = snapTo(Math.round((ev.clientY - panY) / scale - dragOffY));
+      const [mx, my] = clientToCanvas(ev.clientX, ev.clientY);
+      card.x = snapTo(Math.round(mx - dragOffX));
+      card.y = snapTo(Math.round(my - dragOffY));
       el.style.left = card.x + 'px';
       el.style.top = card.y + 'px';
       drawConnectors();
@@ -532,6 +566,7 @@
       isDragging = false;
       if (dragCard) dragCard.classList.remove('dragging');
       dragCard = null;
+      saveState();
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     }
@@ -541,6 +576,14 @@
 
   // \u2500\u2500 Drag from handle to create connection (Obsidian-style) \u2500\u2500
   let connDragLine = null;
+  function clientToCanvas(clientX, clientY) {
+    const rect = viewport.getBoundingClientRect();
+    return [
+      (clientX - rect.left - panX) / scale,
+      (clientY - rect.top - panY) / scale
+    ];
+  }
+
   function onHandleStart(e) {
     e.stopPropagation();
     e.preventDefault();
@@ -566,12 +609,12 @@
     tempPath.setAttribute('fill', 'none');
     svg.appendChild(tempPath);
 
-    const fw = cardEl.offsetWidth, fh = cardEl.offsetHeight;
-    let ox, oy;
-    if (fromSide === 'top') { ox = from.x + fw / 2; oy = from.y; }
-    else if (fromSide === 'bottom') { ox = from.x + fw / 2; oy = from.y + fh; }
-    else if (fromSide === 'left') { ox = from.x; oy = from.y + fh / 2; }
-    else { ox = from.x + fw; oy = from.y + fh / 2; }
+    // Origin = actual rendered center of the handle element
+    const hRect = handle.getBoundingClientRect();
+    const [ox, oy] = clientToCanvas(
+      hRect.left + hRect.width / 2,
+      hRect.top + hRect.height / 2
+    );
 
     function makeBezier(x1, y1, x2, y2, side) {
       const d = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) * 0.4;
@@ -584,49 +627,67 @@
     }
 
     tempPath.setAttribute('d', makeBezier(ox, oy, ox, oy, fromSide));
+    let highlightEl = null;
 
     function onMove(ev) {
-      const mx = (ev.clientX - panX) / scale;
-      const my = (ev.clientY - panY) / scale;
+      const [mx, my] = clientToCanvas(ev.clientX, ev.clientY);
       tempPath.setAttribute('d', makeBezier(ox, oy, mx, my, fromSide));
+
+      // Highlight closest snap target
+      if (highlightEl) { highlightEl.classList.remove('snap-target'); highlightEl = null; }
+      const snap = findSnapTarget(mx, my, fromId);
+      if (snap) {
+        highlightEl = document.getElementById('card-' + snap.card.id);
+        if (highlightEl) highlightEl.classList.add('snap-target');
+      }
     }
     function onUp(ev) {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
       svg.removeChild(tempPath);
+      if (highlightEl) { highlightEl.classList.remove('snap-target'); highlightEl = null; }
 
-      // Find target card under cursor (with snap margin)
-      const mx = (ev.clientX - panX) / scale;
-      const my = (ev.clientY - panY) / scale;
-      const SNAP_MARGIN = 30;
-      let target = null, targetSide = 'top';
-      for (const c of CARDS) {
-        if (c.id === fromId) continue;
-        const el = document.getElementById('card-' + c.id);
-        if (!el) continue;
-        const cw = el.offsetWidth, ch = el.offsetHeight;
-        if (mx >= c.x - SNAP_MARGIN && mx <= c.x + cw + SNAP_MARGIN &&
-            my >= c.y - SNAP_MARGIN && my <= c.y + ch + SNAP_MARGIN) {
-          target = c;
-          const dx1 = Math.abs(mx - c.x);
-          const dx2 = Math.abs(mx - (c.x + cw));
-          const dy1 = Math.abs(my - c.y);
-          const dy2 = Math.abs(my - (c.y + ch));
-          const min = Math.min(dx1, dx2, dy1, dy2);
-          if (min === dx1) targetSide = 'left';
-          else if (min === dx2) targetSide = 'right';
-          else if (min === dy1) targetSide = 'top';
-          else targetSide = 'bottom';
-          break;
-        }
-      }
-      if (target) {
-        CONNECTIONS.push([fromId, target.id, fromSide, targetSide]);
+      const [mx, my] = clientToCanvas(ev.clientX, ev.clientY);
+      const snap = findSnapTarget(mx, my, fromId);
+      if (snap) {
+        CONNECTIONS.push([fromId, snap.card.id, fromSide, snap.side]);
+        saveState();
         renderCards();
       }
     }
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
+  }
+
+  // Find the closest card within snap range (picks nearest, not first)
+  function findSnapTarget(mx, my, excludeId) {
+    const SNAP_MARGIN = 50;
+    let best = null, bestDist = Infinity;
+    for (const c of CARDS) {
+      if (c.id === excludeId) continue;
+      const el = document.getElementById('card-' + c.id);
+      if (!el) continue;
+      const cw = el.offsetWidth, ch = el.offsetHeight;
+      if (mx < c.x - SNAP_MARGIN || mx > c.x + cw + SNAP_MARGIN ||
+          my < c.y - SNAP_MARGIN || my > c.y + ch + SNAP_MARGIN) continue;
+      // Distance to card center
+      const dist = Math.hypot(mx - (c.x + cw / 2), my - (c.y + ch / 2));
+      if (dist < bestDist) {
+        bestDist = dist;
+        const dx1 = Math.abs(mx - c.x);
+        const dx2 = Math.abs(mx - (c.x + cw));
+        const dy1 = Math.abs(my - c.y);
+        const dy2 = Math.abs(my - (c.y + ch));
+        const min = Math.min(dx1, dx2, dy1, dy2);
+        let side = 'top';
+        if (min === dx1) side = 'left';
+        else if (min === dx2) side = 'right';
+        else if (min === dy1) side = 'top';
+        else side = 'bottom';
+        best = { card: c, side, dist };
+      }
+    }
+    return best;
   }
 
   function onCardCtx(e) {
@@ -693,6 +754,7 @@
         hit.addEventListener('click', () => {
           if (confirm('Delete connection ' + fromId + ' → ' + toId + '?')) {
             CONNECTIONS.splice(idx, 1);
+            saveState();
             renderCards();
           }
         });
@@ -760,6 +822,7 @@
       CARDS.push(data);
     }
     modalOverlay.style.display = 'none';
+    saveState();
     renderCards();
   });
 
@@ -772,6 +835,7 @@
     for (let i = CONNECTIONS.length - 1; i >= 0; i--) {
       if (CONNECTIONS[i][0] === id || CONNECTIONS[i][1] === id) CONNECTIONS.splice(i, 1);
     }
+    saveState();
     renderCards();
   }
 
@@ -795,6 +859,7 @@
     CONNECTIONS.push([f.fromId.value, f.toId.value, f.fromSide.value, f.toSide.value]);
     connOverlay.style.display = 'none';
     connFromId = null;
+    saveState();
     renderCards();
   });
 
