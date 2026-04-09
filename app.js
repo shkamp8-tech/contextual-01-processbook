@@ -435,6 +435,17 @@
       drawConnectors();
       setupDrag();
     });
+
+    // Redraw connectors once all images have loaded (fixes offset for photo cards)
+    const imgs = canvas.querySelectorAll('img');
+    imgs.forEach(img => {
+      if (!img.complete) {
+        img.addEventListener('load', () => {
+          drawConnectors();
+          updateMinimap();
+        }, { once: true });
+      }
+    });
   }
 
   // ════════════════════════════════════════
