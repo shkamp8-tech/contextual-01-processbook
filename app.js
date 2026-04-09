@@ -355,16 +355,10 @@
 
       // Image preview card
       if (card.image) {
-        const linkOpen = card.link
-          ? `<a href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">`
-          : '<div>';
-        const linkClose = card.link ? '</a>' : '</div>';
         cardsHtml += `
         <div class="card card--preview" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
-          ${linkOpen}
-            <img class="card__image" src="${sanitize(card.image)}" alt="${sanitize(card.title)}" />
-            <span class="card__image-label">${sanitize(card.title)} ${card.link ? '↗' : ''}</span>
-          ${linkClose}
+          <img class="card__image" src="${sanitize(card.image)}" alt="${sanitize(card.title)}" draggable="false" />
+          ${card.title ? `<span class="card__image-label">${sanitize(card.title)}</span>` : ''}
           ${handles}
         </div>`;
         return;
@@ -509,12 +503,13 @@
   let dragCard = null, dragOffX = 0, dragOffY = 0;
   function onDragStart(e) {
     if (!editMode) return;
-    if (e.button === 2) return; // right-click
+    if (e.button === 2) return;
     const el = e.target.closest('.card');
     if (!el) return;
-    // Don't drag if clicking a link or handle
-    if (e.target.closest('a')) return;
     if (e.target.closest('.handle')) return;
+    // In non-edit mode, allow links; in edit mode, prevent default for drag
+    if (e.target.closest('a') && !editMode) return;
+    e.preventDefault();
     e.stopPropagation();
     isDragging = true;
     dragCard = el;
@@ -556,7 +551,7 @@
     const from = CARDS.find(c => c.id === fromId);
     if (!from) return;
 
-    // Create temp SVG line
+    // Create temp SVG with curved path
     let svg = canvas.querySelector('.conn-temp');
     if (!svg) {
       svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -564,11 +559,12 @@
       svg.setAttribute('style', 'position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:10;overflow:visible;');
       canvas.appendChild(svg);
     }
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('stroke', 'var(--accent)');
-    line.setAttribute('stroke-width', '2');
-    line.setAttribute('stroke-dasharray', '6 4');
-    svg.appendChild(line);
+    const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    tempPath.setAttribute('stroke', 'var(--accent)');
+    tempPath.setAttribute('stroke-width', '2');
+    tempPath.setAttribute('stroke-dasharray', '6 4');
+    tempPath.setAttribute('fill', 'none');
+    svg.appendChild(tempPath);
 
     const fw = cardEl.offsetWidth, fh = cardEl.offsetHeight;
     let ox, oy;
@@ -577,36 +573,45 @@
     else if (fromSide === 'left') { ox = from.x; oy = from.y + fh / 2; }
     else { ox = from.x + fw; oy = from.y + fh / 2; }
 
-    line.setAttribute('x1', ox);
-    line.setAttribute('y1', oy);
-    line.setAttribute('x2', ox);
-    line.setAttribute('y2', oy);
+    function makeBezier(x1, y1, x2, y2, side) {
+      const d = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) * 0.4;
+      let cx1 = x1, cy1 = y1;
+      if (side === 'bottom') cy1 = y1 + d;
+      else if (side === 'top') cy1 = y1 - d;
+      else if (side === 'right') cx1 = x1 + d;
+      else if (side === 'left') cx1 = x1 - d;
+      return `M${x1},${y1} C${cx1},${cy1} ${x2},${y2} ${x2},${y2}`;
+    }
+
+    tempPath.setAttribute('d', makeBezier(ox, oy, ox, oy, fromSide));
 
     function onMove(ev) {
       const mx = (ev.clientX - panX) / scale;
       const my = (ev.clientY - panY) / scale;
-      line.setAttribute('x2', mx);
-      line.setAttribute('y2', my);
+      tempPath.setAttribute('d', makeBezier(ox, oy, mx, my, fromSide));
     }
     function onUp(ev) {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
-      svg.removeChild(line);
+      svg.removeChild(tempPath);
 
-      // Find target card under cursor
+      // Find target card under cursor (with snap margin)
       const mx = (ev.clientX - panX) / scale;
       const my = (ev.clientY - panY) / scale;
+      const SNAP_MARGIN = 30;
       let target = null, targetSide = 'top';
       for (const c of CARDS) {
         if (c.id === fromId) continue;
         const el = document.getElementById('card-' + c.id);
         if (!el) continue;
         const cw = el.offsetWidth, ch = el.offsetHeight;
-        if (mx >= c.x && mx <= c.x + cw && my >= c.y && my <= c.y + ch) {
+        if (mx >= c.x - SNAP_MARGIN && mx <= c.x + cw + SNAP_MARGIN &&
+            my >= c.y - SNAP_MARGIN && my <= c.y + ch + SNAP_MARGIN) {
           target = c;
-          // Determine closest side
-          const dx1 = mx - c.x, dx2 = c.x + cw - mx;
-          const dy1 = my - c.y, dy2 = c.y + ch - my;
+          const dx1 = Math.abs(mx - c.x);
+          const dx2 = Math.abs(mx - (c.x + cw));
+          const dy1 = Math.abs(my - c.y);
+          const dy2 = Math.abs(my - (c.y + ch));
           const min = Math.min(dx1, dx2, dy1, dy2);
           if (min === dx1) targetSide = 'left';
           else if (min === dx2) targetSide = 'right';
