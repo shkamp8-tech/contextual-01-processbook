@@ -98,7 +98,7 @@
       title: 'Wordweb Visualization',
       phase: '',
       desc: '',
-      link: 'https://shkamp8-tech.github.io/wordweb/',
+      link: '',
       date: '',
       pin: '',
       x: 500,
@@ -344,6 +344,12 @@
   function renderCards() {
     // Render cards first
     let cardsHtml = '';
+    const handles = editMode ? `
+        <div class="handle handle--top" data-side="top"></div>
+        <div class="handle handle--bottom" data-side="bottom"></div>
+        <div class="handle handle--left" data-side="left"></div>
+        <div class="handle handle--right" data-side="right"></div>` : '';
+
     CARDS.forEach(card => {
       const color = PHASE_COLORS[card.phase] || 'var(--text-muted)';
 
@@ -359,6 +365,7 @@
             <img class="card__image" src="${sanitize(card.image)}" alt="${sanitize(card.title)}" />
             <span class="card__image-label">${sanitize(card.title)} ${card.link ? '↗' : ''}</span>
           ${linkClose}
+          ${handles}
         </div>`;
         return;
       }
@@ -370,6 +377,7 @@
           <div class="card__body">
             <p class="card__desc">${sanitize(card.desc)}</p>
           </div>
+          ${handles}
         </div>`;
         return;
       }
@@ -391,6 +399,7 @@
           </div>
           ${card.pin ? `<div class="card__pin">${sanitize(card.pin)}</div>` : ''}
         </div>
+        ${handles}
       </div>`;
     });
     canvas.innerHTML = cardsHtml;
@@ -482,11 +491,18 @@
   });
 
   // ── Card dragging ──
+  // ── Card dragging + handle connections ──
+  const GRID = 20;
+  function snapTo(v) { return Math.round(v / GRID) * GRID; }
+
   function setupDrag() {
     if (!editMode) return;
     document.querySelectorAll('.card').forEach(el => {
       el.addEventListener('mousedown', onDragStart);
       el.addEventListener('contextmenu', onCardCtx);
+    });
+    document.querySelectorAll('.handle').forEach(h => {
+      h.addEventListener('mousedown', onHandleStart);
     });
   }
 
@@ -496,8 +512,9 @@
     if (e.button === 2) return; // right-click
     const el = e.target.closest('.card');
     if (!el) return;
-    // Don't drag if clicking a link
+    // Don't drag if clicking a link or handle
     if (e.target.closest('a')) return;
+    if (e.target.closest('.handle')) return;
     e.stopPropagation();
     isDragging = true;
     dragCard = el;
@@ -509,8 +526,8 @@
     dragOffY = (e.clientY - panY) / scale - card.y;
 
     function onMove(ev) {
-      card.x = Math.round((ev.clientX - panX) / scale - dragOffX);
-      card.y = Math.round((ev.clientY - panY) / scale - dragOffY);
+      card.x = snapTo(Math.round((ev.clientX - panX) / scale - dragOffX));
+      card.y = snapTo(Math.round((ev.clientY - panY) / scale - dragOffY));
       el.style.left = card.x + 'px';
       el.style.top = card.y + 'px';
       drawConnectors();
@@ -527,6 +544,86 @@
     window.addEventListener('mouseup', onUp);
   }
 
+  // \u2500\u2500 Drag from handle to create connection (Obsidian-style) \u2500\u2500
+  let connDragLine = null;
+  function onHandleStart(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    const handle = e.target;
+    const cardEl = handle.closest('.card');
+    const fromId = cardEl.id.replace('card-', '');
+    const fromSide = handle.dataset.side;
+    const from = CARDS.find(c => c.id === fromId);
+    if (!from) return;
+
+    // Create temp SVG line
+    let svg = canvas.querySelector('.conn-temp');
+    if (!svg) {
+      svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.classList.add('conn-temp');
+      svg.setAttribute('style', 'position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:10;overflow:visible;');
+      canvas.appendChild(svg);
+    }
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('stroke', 'var(--accent)');
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('stroke-dasharray', '6 4');
+    svg.appendChild(line);
+
+    const fw = cardEl.offsetWidth, fh = cardEl.offsetHeight;
+    let ox, oy;
+    if (fromSide === 'top') { ox = from.x + fw / 2; oy = from.y; }
+    else if (fromSide === 'bottom') { ox = from.x + fw / 2; oy = from.y + fh; }
+    else if (fromSide === 'left') { ox = from.x; oy = from.y + fh / 2; }
+    else { ox = from.x + fw; oy = from.y + fh / 2; }
+
+    line.setAttribute('x1', ox);
+    line.setAttribute('y1', oy);
+    line.setAttribute('x2', ox);
+    line.setAttribute('y2', oy);
+
+    function onMove(ev) {
+      const mx = (ev.clientX - panX) / scale;
+      const my = (ev.clientY - panY) / scale;
+      line.setAttribute('x2', mx);
+      line.setAttribute('y2', my);
+    }
+    function onUp(ev) {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      svg.removeChild(line);
+
+      // Find target card under cursor
+      const mx = (ev.clientX - panX) / scale;
+      const my = (ev.clientY - panY) / scale;
+      let target = null, targetSide = 'top';
+      for (const c of CARDS) {
+        if (c.id === fromId) continue;
+        const el = document.getElementById('card-' + c.id);
+        if (!el) continue;
+        const cw = el.offsetWidth, ch = el.offsetHeight;
+        if (mx >= c.x && mx <= c.x + cw && my >= c.y && my <= c.y + ch) {
+          target = c;
+          // Determine closest side
+          const dx1 = mx - c.x, dx2 = c.x + cw - mx;
+          const dy1 = my - c.y, dy2 = c.y + ch - my;
+          const min = Math.min(dx1, dx2, dy1, dy2);
+          if (min === dx1) targetSide = 'left';
+          else if (min === dx2) targetSide = 'right';
+          else if (min === dy1) targetSide = 'top';
+          else targetSide = 'bottom';
+          break;
+        }
+      }
+      if (target) {
+        CONNECTIONS.push([fromId, target.id, fromSide, targetSide]);
+        renderCards();
+      }
+    }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }
+
   function onCardCtx(e) {
     if (!editMode) return;
     e.preventDefault();
@@ -536,12 +633,16 @@
     showCtx(e.clientX, e.clientY, el.id.replace('card-', ''));
   }
 
-  // ── Draw only connectors (without re-rendering cards) ──
+  // ── Draw connectors (clickable in edit mode) ──
   function drawConnectors() {
     const old = canvas.querySelector('.connectors');
     if (old) old.remove();
-    let svgHtml = '<svg class="connectors" style="position:absolute;top:0;left:0;width:9999px;height:9999px;pointer-events:none;z-index:1;overflow:visible;">';
-    CONNECTIONS.forEach(([fromId, toId, fromSide, toSide]) => {
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNs, 'svg');
+    svg.classList.add('connectors');
+    svg.setAttribute('style', 'position:absolute;top:0;left:0;width:9999px;height:9999px;z-index:1;overflow:visible;pointer-events:' + (editMode ? 'auto' : 'none') + ';');
+
+    CONNECTIONS.forEach(([fromId, toId, fromSide, toSide], idx) => {
       const from = CARDS.find(c => c.id === fromId);
       const to   = CARDS.find(c => c.id === toId);
       if (!from || !to) return;
@@ -570,10 +671,30 @@
       else if (toSide === 'bottom') { cx2 = x2; cy2 = y2 + dist; }
       else if (toSide === 'left') { cx2 = x2 - dist; cy2 = y2; }
       else if (toSide === 'right') { cx2 = x2 + dist; cy2 = y2; }
-      svgHtml += `<path d="M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}" />`;
+
+      const d = `M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`;
+
+      // Visible path
+      const path = document.createElementNS(svgNs, 'path');
+      path.setAttribute('d', d);
+      path.classList.add('conn-path');
+      svg.appendChild(path);
+
+      // Fat invisible hit area for clicking in edit mode
+      if (editMode) {
+        const hit = document.createElementNS(svgNs, 'path');
+        hit.setAttribute('d', d);
+        hit.classList.add('conn-hit');
+        hit.addEventListener('click', () => {
+          if (confirm('Delete connection ' + fromId + ' → ' + toId + '?')) {
+            CONNECTIONS.splice(idx, 1);
+            renderCards();
+          }
+        });
+        svg.appendChild(hit);
+      }
     });
-    svgHtml += '</svg>';
-    canvas.insertAdjacentHTML('afterbegin', svgHtml);
+    canvas.insertAdjacentElement('afterbegin', svg);
   }
 
   // ── Add card modal ──

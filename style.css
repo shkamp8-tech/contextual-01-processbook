@@ -183,14 +183,50 @@ body.grabbing { cursor: grabbing; }
   position: absolute;
   top: 0; left: 0;
   overflow: visible;
-  pointer-events: none;
   z-index: 1;
 }
-.connectors path {
+.conn-path {
   stroke: var(--connector);
   stroke-width: 2;
   fill: none;
+  pointer-events: none;
 }
+.conn-hit {
+  stroke: transparent;
+  stroke-width: 16;
+  fill: none;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.conn-hit:hover + .conn-path,
+.conn-hit:hover ~ .conn-path { stroke: var(--accent); }
+/* Highlight on hover — use sibling approach */
+.conn-hit:hover { stroke: rgba(0,113,227,0.1); }
+
+/* ── Connection handles (Obsidian-style) ── */
+.handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--connector);
+  z-index: 5;
+  cursor: crosshair;
+  opacity: 0;
+  transition: opacity 0.15s, border-color 0.15s, transform 0.15s;
+  pointer-events: auto;
+}
+.editing-mode .card:hover .handle { opacity: 1; }
+.handle:hover {
+  border-color: var(--accent);
+  transform: scale(1.3);
+  opacity: 1 !important;
+}
+.handle--top { top: -6px; left: 50%; margin-left: -6px; }
+.handle--bottom { bottom: -6px; left: 50%; margin-left: -6px; }
+.handle--left { left: -6px; top: 50%; margin-top: -6px; }
+.handle--right { right: -6px; top: 50%; margin-top: -6px; }
 
 /* ── Card ── */
 .card {
