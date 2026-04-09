@@ -437,13 +437,23 @@
     });
 
     // Redraw connectors once all images have loaded (fixes offset for photo cards)
+    // Always listen — cached images may be complete but not yet laid out
     const imgs = canvas.querySelectorAll('img');
+    let pending = imgs.length;
+    function onImgReady() {
+      pending--;
+      if (pending <= 0) {
+        drawConnectors();
+        updateMinimap();
+      }
+    }
     imgs.forEach(img => {
-      if (!img.complete) {
-        img.addEventListener('load', () => {
-          drawConnectors();
-          updateMinimap();
-        }, { once: true });
+      if (img.complete && img.naturalHeight > 0) {
+        // Already loaded, but wait for layout
+        requestAnimationFrame(() => requestAnimationFrame(onImgReady));
+      } else {
+        img.addEventListener('load', onImgReady, { once: true });
+        img.addEventListener('error', onImgReady, { once: true });
       }
     });
   }
