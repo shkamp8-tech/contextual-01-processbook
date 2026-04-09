@@ -633,13 +633,17 @@
       const [mx, my] = clientToCanvas(ev.clientX, ev.clientY);
       tempPath.setAttribute('d', makeBezier(ox, oy, mx, my, fromSide));
 
-      // Highlight snap target (element under cursor first, then coordinate fallback)
+      // Highlight snap target (elementsFromPoint to see through transparent cards)
       if (highlightEl) { highlightEl.classList.remove('snap-target'); highlightEl = null; }
-      const elUnder = document.elementFromPoint(ev.clientX, ev.clientY);
-      const cardUnder = elUnder ? elUnder.closest('.card') : null;
-      if (cardUnder && cardUnder.id.replace('card-', '') !== fromId) {
-        highlightEl = cardUnder;
-      } else {
+      const elsHover = document.elementsFromPoint(ev.clientX, ev.clientY);
+      for (const el of elsHover) {
+        const cardEl = el.closest('.card');
+        if (cardEl && cardEl.id.replace('card-', '') !== fromId) {
+          highlightEl = cardEl;
+          break;
+        }
+      }
+      if (!highlightEl) {
         const snap = findSnapTarget(mx, my, fromId);
         if (snap) highlightEl = document.getElementById('card-' + snap.card.id);
       }
@@ -651,18 +655,21 @@
       svg.removeChild(tempPath);
       if (highlightEl) { highlightEl.classList.remove('snap-target'); highlightEl = null; }
 
-      // 1) Try detecting card directly under cursor
-      const elUnder = document.elementFromPoint(ev.clientX, ev.clientY);
-      const cardUnder = elUnder ? elUnder.closest('.card') : null;
+      // 1) Try detecting card directly under cursor (elementsFromPoint to see through transparent bg)
+      const elsUnder = document.elementsFromPoint(ev.clientX, ev.clientY);
       let targetId = null, targetSide = 'top';
 
-      if (cardUnder) {
-        targetId = cardUnder.id.replace('card-', '');
+      for (const el of elsUnder) {
+        const cardEl = el.closest('.card');
+        if (cardEl) {
+          const id = cardEl.id.replace('card-', '');
+          if (id !== fromId) { targetId = id; break; }
+        }
       }
 
       // 2) Fallback: coordinate-based snap for near-misses
       const [mx, my] = clientToCanvas(ev.clientX, ev.clientY);
-      if (!targetId || targetId === fromId) {
+      if (!targetId) {
         const snap = findSnapTarget(mx, my, fromId);
         if (snap) {
           targetId = snap.card.id;
@@ -670,8 +677,8 @@
         }
       }
 
-      // Determine best side if found via elementFromPoint
-      if (targetId && targetId !== fromId && cardUnder) {
+      // Determine best side based on mouse position relative to card
+      if (targetId && targetId !== fromId) {
         const tc = CARDS.find(c => c.id === targetId);
         const tel = document.getElementById('card-' + targetId);
         if (tc && tel) {
