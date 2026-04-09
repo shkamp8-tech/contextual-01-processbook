@@ -436,26 +436,32 @@
       setupDrag();
     });
 
-    // Redraw connectors once all images have loaded (fixes offset for photo cards)
-    // Always listen — cached images may be complete but not yet laid out
+    // Redraw connectors after all images are fully loaded and laid out
     const imgs = canvas.querySelectorAll('img');
-    let pending = imgs.length;
-    function onImgReady() {
-      pending--;
-      if (pending <= 0) {
-        drawConnectors();
-        updateMinimap();
+    if (imgs.length > 0) {
+      let settled = false;
+      function redrawWhenReady() {
+        if (settled) return;
+        const allReady = Array.from(imgs).every(img => img.complete && img.naturalHeight > 0);
+        if (allReady) {
+          settled = true;
+          requestAnimationFrame(() => {
+            drawConnectors();
+            updateMinimap();
+          });
+        }
       }
+      imgs.forEach(img => {
+        img.addEventListener('load', redrawWhenReady, { once: true });
+      });
+      // Also poll briefly in case load events already fired
+      const poll = setInterval(() => {
+        redrawWhenReady();
+        if (settled) clearInterval(poll);
+      }, 100);
+      // Stop polling after 5s max
+      setTimeout(() => { clearInterval(poll); redrawWhenReady(); }, 5000);
     }
-    imgs.forEach(img => {
-      if (img.complete && img.naturalHeight > 0) {
-        // Already loaded, but wait for layout
-        requestAnimationFrame(() => requestAnimationFrame(onImgReady));
-      } else {
-        img.addEventListener('load', onImgReady, { once: true });
-        img.addEventListener('error', onImgReady, { once: true });
-      }
-    });
   }
 
   // ════════════════════════════════════════
@@ -775,16 +781,24 @@
     svg.classList.add('connectors');
     svg.setAttribute('style', 'position:absolute;top:0;left:0;width:9999px;height:9999px;z-index:1;overflow:visible;pointer-events:' + (editMode ? 'auto' : 'none') + ';');
 
+    // Use getBoundingClientRect for accurate sizes (images may not be laid out yet with offsetHeight)
+    const vRect = viewport.getBoundingClientRect();
+
     CONNECTIONS.forEach(([fromId, toId, fromSide, toSide], idx) => {
       const from = CARDS.find(c => c.id === fromId);
       const to   = CARDS.find(c => c.id === toId);
       if (!from || !to) return;
       const fromEl = document.getElementById('card-' + fromId);
       const toEl   = document.getElementById('card-' + toId);
-      const fw = fromEl ? fromEl.offsetWidth : 320;
-      const fh = fromEl ? fromEl.offsetHeight : 200;
-      const tw = toEl ? toEl.offsetWidth : 320;
-      const th = toEl ? toEl.offsetHeight : 200;
+      if (!fromEl || !toEl) return;
+
+      // Get actual rendered size via bounding rect, converted to canvas space
+      const fRect = fromEl.getBoundingClientRect();
+      const tRect = toEl.getBoundingClientRect();
+      const fw = fRect.width / scale;
+      const fh = fRect.height / scale;
+      const tw = tRect.width / scale;
+      const th = tRect.height / scale;
       let x1, y1, x2, y2;
       if (fromSide === 'bottom') { x1 = from.x + fw / 2; y1 = from.y + fh; }
       else if (fromSide === 'top') { x1 = from.x + fw / 2; y1 = from.y; }
