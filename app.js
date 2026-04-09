@@ -505,12 +505,12 @@
     const id = el.id.replace('card-', '');
     const card = CARDS.find(c => c.id === id);
     if (!card) return;
-    dragOffX = e.clientX / scale - card.x;
-    dragOffY = e.clientY / scale - card.y;
+    dragOffX = (e.clientX - panX) / scale - card.x;
+    dragOffY = (e.clientY - panY) / scale - card.y;
 
     function onMove(ev) {
-      card.x = Math.round(ev.clientX / scale - dragOffX - panX / scale);
-      card.y = Math.round(ev.clientY / scale - dragOffY - panY / scale);
+      card.x = Math.round((ev.clientX - panX) / scale - dragOffX);
+      card.y = Math.round((ev.clientY - panY) / scale - dragOffY);
       el.style.left = card.x + 'px';
       el.style.top = card.y + 'px';
       drawConnectors();
