@@ -121,13 +121,12 @@
       id: 'interview',
       title: 'Interview',
       phase: 'Research',
-      desc: '',
+      desc: 'Interviews conducted with peers and experts to explore perspectives on interaction, control, and unpredictability in design.',
       link: '',
       date: '2026-04-08',
       pin: '',
       x: 100,
       y: 950,
-      small: true,
     },
     {
       id: 'notes',
@@ -172,6 +171,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
+  const DATA_VERSION = 2; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -179,19 +179,24 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const state = JSON.parse(raw);
-        CARDS = state.cards || [];
-        CONNECTIONS = state.connections || [];
-        return;
+        if (state.version === DATA_VERSION) {
+          CARDS = state.cards || [];
+          CONNECTIONS = state.connections || [];
+          return;
+        }
+        // Old version — discard and use new defaults
       }
     } catch (e) { /* ignore corrupt data */ }
     // Fall back to defaults
     CARDS = JSON.parse(JSON.stringify(DEFAULT_CARDS));
     CONNECTIONS = JSON.parse(JSON.stringify(DEFAULT_CONNECTIONS));
+    saveState();
   }
 
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        version: DATA_VERSION,
         cards: CARDS,
         connections: CONNECTIONS,
       }));
@@ -773,23 +778,24 @@
   }
 
   // ── Draw connectors (clickable in edit mode) ──
-  // Get reliable card dimensions — for image cards, compute from natural image size
+  // Get reliable card dimensions
   function getCardSize(cardData, cardEl) {
     if (!cardEl) return [320, 200];
-    // Image card: compute height from image natural dimensions
+    // Image card: use hardcoded width (420) and compute height from aspect ratio
     if (cardData.image) {
       const img = cardEl.querySelector('img');
       if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
-        const cardW = cardEl.offsetWidth || 420;
-        const cardH = cardW * (img.naturalHeight / img.naturalWidth);
-        // Add label height (~30px)
-        const label = cardEl.querySelector('.card__image-label');
-        return [cardW, cardH + (label ? 0 : 0)];
+        const w = 420;
+        const h = w * (img.naturalHeight / img.naturalWidth);
+        return [w, h];
       }
-      // Image not loaded yet — return 0 to signal "skip this connector"
-      return [cardEl.offsetWidth || 420, 0];
+      // Image not decoded yet
+      return [420, -1];
     }
-    return [cardEl.offsetWidth || 320, cardEl.offsetHeight || 200];
+    // Non-image cards: offsetHeight is reliable since they have no async content
+    const w = cardEl.offsetWidth || 320;
+    const h = cardEl.offsetHeight || 200;
+    return [w, h];
   }
 
   function drawConnectors() {
@@ -810,8 +816,8 @@
 
       const [fw, fh] = getCardSize(from, fromEl);
       const [tw, th] = getCardSize(to, toEl);
-      // Skip if an image card hasn't loaded yet (height = 0)
-      if (fh === 0 || th === 0) return;
+      // Skip if an image card hasn't loaded yet (height = -1)
+      if (fh < 0 || th < 0) return;
       let x1, y1, x2, y2;
       if (fromSide === 'bottom') { x1 = from.x + fw / 2; y1 = from.y + fh; }
       else if (fromSide === 'top') { x1 = from.x + fw / 2; y1 = from.y; }
