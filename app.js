@@ -633,13 +633,17 @@
       const [mx, my] = clientToCanvas(ev.clientX, ev.clientY);
       tempPath.setAttribute('d', makeBezier(ox, oy, mx, my, fromSide));
 
-      // Highlight closest snap target
+      // Highlight snap target (element under cursor first, then coordinate fallback)
       if (highlightEl) { highlightEl.classList.remove('snap-target'); highlightEl = null; }
-      const snap = findSnapTarget(mx, my, fromId);
-      if (snap) {
-        highlightEl = document.getElementById('card-' + snap.card.id);
-        if (highlightEl) highlightEl.classList.add('snap-target');
+      const elUnder = document.elementFromPoint(ev.clientX, ev.clientY);
+      const cardUnder = elUnder ? elUnder.closest('.card') : null;
+      if (cardUnder && cardUnder.id.replace('card-', '') !== fromId) {
+        highlightEl = cardUnder;
+      } else {
+        const snap = findSnapTarget(mx, my, fromId);
+        if (snap) highlightEl = document.getElementById('card-' + snap.card.id);
       }
+      if (highlightEl) highlightEl.classList.add('snap-target');
     }
     function onUp(ev) {
       window.removeEventListener('mousemove', onMove);
@@ -647,10 +651,45 @@
       svg.removeChild(tempPath);
       if (highlightEl) { highlightEl.classList.remove('snap-target'); highlightEl = null; }
 
+      // 1) Try detecting card directly under cursor
+      const elUnder = document.elementFromPoint(ev.clientX, ev.clientY);
+      const cardUnder = elUnder ? elUnder.closest('.card') : null;
+      let targetId = null, targetSide = 'top';
+
+      if (cardUnder) {
+        targetId = cardUnder.id.replace('card-', '');
+      }
+
+      // 2) Fallback: coordinate-based snap for near-misses
       const [mx, my] = clientToCanvas(ev.clientX, ev.clientY);
-      const snap = findSnapTarget(mx, my, fromId);
-      if (snap) {
-        CONNECTIONS.push([fromId, snap.card.id, fromSide, snap.side]);
+      if (!targetId || targetId === fromId) {
+        const snap = findSnapTarget(mx, my, fromId);
+        if (snap) {
+          targetId = snap.card.id;
+          targetSide = snap.side;
+        }
+      }
+
+      // Determine best side if found via elementFromPoint
+      if (targetId && targetId !== fromId && cardUnder) {
+        const tc = CARDS.find(c => c.id === targetId);
+        const tel = document.getElementById('card-' + targetId);
+        if (tc && tel) {
+          const cw = tel.offsetWidth, ch = tel.offsetHeight;
+          const dx1 = Math.abs(mx - tc.x);
+          const dx2 = Math.abs(mx - (tc.x + cw));
+          const dy1 = Math.abs(my - tc.y);
+          const dy2 = Math.abs(my - (tc.y + ch));
+          const min = Math.min(dx1, dx2, dy1, dy2);
+          if (min === dx1) targetSide = 'left';
+          else if (min === dx2) targetSide = 'right';
+          else if (min === dy1) targetSide = 'top';
+          else targetSide = 'bottom';
+        }
+      }
+
+      if (targetId && targetId !== fromId) {
+        CONNECTIONS.push([fromId, targetId, fromSide, targetSide]);
         saveState();
         renderCards();
       }
