@@ -190,17 +190,17 @@
     ['fascination-info', 'interview', 'bottom', 'top'],
     ['fascination-info', 'notes', 'bottom', 'top'],
     ['wordweb', 'theme', 'bottom', 'top'],
-    ['fascination', 'library-of-babel', 'bottom', 'top'],
-    ['wordweb', 'library-of-babel', 'bottom', 'top'],
-    ['fascination', 'spectre-tile', 'bottom', 'top'],
-    ['wordweb', 'spectre-tile', 'bottom', 'top'],
+    ['fascination', 'mediums', 'bottom', 'top'],
+    ['wordweb', 'mediums', 'bottom', 'top'],
+    ['mediums', 'library-of-babel', 'bottom', 'top'],
+    ['mediums', 'spectre-tile', 'bottom', 'top'],
   ];
 
   // ════════════════════════════════════════
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 3; // bump to force reset to new defaults
+  const DATA_VERSION = 4; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
