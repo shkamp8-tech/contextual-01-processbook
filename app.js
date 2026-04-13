@@ -152,6 +152,31 @@
       y: 1100,
       small: true,
     },
+    {
+      id: 'library-of-babel',
+      title: 'Library of Babel',
+      phase: 'Research',
+      desc: 'A digital exploration of Jorge Luis Borges\' concept — a website containing every possible page of text, representing infinity, randomness, and the search for meaning.',
+      link: 'https://libraryofbabel.info/',
+      date: '2026-04-13',
+      pin: '',
+      x: -300,
+      y: 400,
+    },
+    {
+      id: 'spectre-tile',
+      title: 'Spectre Tile',
+      phase: 'Research',
+      desc: 'The first true aperiodic monotile — a single shape that tiles the plane without ever repeating. Explores order emerging from simple rules without predictable patterns.',
+      links: [
+        { label: 'Scientific American ↗', url: 'https://www.scientificamerican.com/article/newfound-mathematical-einstein-shape-creates-a-never-repeating-pattern/' },
+        { label: 'Spectre interactive ↗', url: 'https://cs.uwaterloo.ca/~csk/spectre/' },
+      ],
+      date: '2026-04-13',
+      pin: '',
+      x: -300,
+      y: 700,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -165,13 +190,17 @@
     ['fascination-info', 'interview', 'bottom', 'top'],
     ['fascination-info', 'notes', 'bottom', 'top'],
     ['wordweb', 'theme', 'bottom', 'top'],
+    ['fascination', 'library-of-babel', 'bottom', 'top'],
+    ['wordweb', 'library-of-babel', 'bottom', 'top'],
+    ['fascination', 'spectre-tile', 'bottom', 'top'],
+    ['wordweb', 'spectre-tile', 'bottom', 'top'],
   ];
 
   // ════════════════════════════════════════
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 2; // bump to force reset to new defaults
+  const DATA_VERSION = 3; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -413,9 +442,14 @@
         return;
       }
 
-      const linkHtml = card.link
-        ? `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">View research ↗</a>`
-        : '';
+      let linkHtml = '';
+      if (card.links && card.links.length) {
+        linkHtml = card.links.map(l =>
+          `<a class="card__link" href="${sanitize(l.url)}" target="_blank" rel="noopener noreferrer">${sanitize(l.label)}</a>`
+        ).join('');
+      } else if (card.link) {
+        linkHtml = `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">View research ↗</a>`;
+      }
       const smallClass = card.small ? ' card--small' : '';
       cardsHtml += `
       <div class="card${smallClass}" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">

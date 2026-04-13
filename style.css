@@ -277,6 +277,7 @@ body.grabbing { cursor: grabbing; }
 .card__footer {
   display: flex; justify-content: space-between; align-items: center;
   padding-top: 10px; border-top: 1px solid var(--border);
+  flex-wrap: wrap; gap: 4px;
 }
 .card__date {
   font-size: 0.75rem; color: var(--text-muted);
