@@ -158,6 +158,7 @@
       phase: 'Research',
       desc: 'A digital exploration of Jorge Luis Borges\' concept — a website containing every possible page of text, representing infinity, randomness, and the search for meaning.',
       link: 'https://libraryofbabel.info/',
+      linkLabel: 'Explore Library \u2197',
       date: '2026-04-13',
       pin: '',
       x: -300,
@@ -230,13 +231,14 @@
     ['mediums', 'spectre-tile', 'bottom', 'top'],
     ['interview', 'conversation-notes', 'bottom', 'top'],
     ['interview', 'interview-questions', 'bottom', 'top'],
+    ['interview-questions', 'interview-questions-info', 'bottom', 'top'],
   ];
 
   // ════════════════════════════════════════
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 6; // bump to force reset to new defaults
+  const DATA_VERSION = 7; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -502,10 +504,16 @@
 
       // Info box card
       if (card.info) {
+        let infoContent = '';
+        if (card.bullets && card.bullets.length) {
+          infoContent = `<ul class="card__bullets">${card.bullets.map(b => `<li>${sanitize(b)}</li>`).join('')}</ul>`;
+        } else if (card.desc) {
+          infoContent = `<p class="card__desc">${sanitize(card.desc)}</p>`;
+        }
         cardsHtml += `
         <div class="card card--info" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
           <div class="card__body">
-            <p class="card__desc">${sanitize(card.desc)}</p>
+            ${infoContent}
           </div>
           ${handles}
         </div>`;
@@ -514,11 +522,12 @@
 
       let linkHtml = '';
       if (card.links && card.links.length) {
-        linkHtml = card.links.map(l =>
+        linkHtml = `<div class="card__links-col">${card.links.map(l =>
           `<a class="card__link" href="${sanitize(l.url)}" target="_blank" rel="noopener noreferrer">${sanitize(l.label)}</a>`
-        ).join('');
+        ).join('')}</div>`;
       } else if (card.link) {
-        linkHtml = `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">View research ↗</a>`;
+        const label = card.linkLabel || 'View research ↗';
+        linkHtml = `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">${sanitize(label)}</a>`;
       }
       const smallClass = card.small ? ' card--small' : '';
       cardsHtml += `

@@ -308,6 +308,28 @@ body.grabbing { cursor: grabbing; }
   font-size: 0.82rem;
   line-height: 1.55;
 }
+.card__bullets {
+  margin: 0;
+  padding: 0 0 0 18px;
+  list-style: disc;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+.card__bullets li {
+  margin-bottom: 6px;
+}
+.card__bullets li:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Stacked links column ── */
+.card__links-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
 
 /* ── Preview / image card variant ── */
 .card--preview {
