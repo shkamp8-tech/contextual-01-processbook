@@ -55,8 +55,8 @@
       link: 'https://shkamp8-tech.github.io/fascination-project-research/',
       date: '2026-04-08',
       pin: '0001',
-      x: 100,
-      y: 100,
+      x: 0,
+      y: 0,
     },
     {
       id: 'fascination-photo',
@@ -66,8 +66,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 520,
-      y: 50,
+      x: 450,
+      y: -20,
       image: 'assets/fascination.jpg',
     },
     {
@@ -78,8 +78,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 520,
-      y: 380,
+      x: 450,
+      y: 350,
       info: true,
     },
     {
@@ -90,8 +90,8 @@
       link: 'https://shkamp8-tech.github.io/wordweb/',
       date: '2026-04-08',
       pin: '0002',
-      x: 100,
-      y: 650,
+      x: 0,
+      y: 500,
     },
     {
       id: 'wordweb-preview',
@@ -101,8 +101,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 500,
-      y: 650,
+      x: 450,
+      y: 500,
       image: 'assets/wordweb.png',
     },
     {
@@ -113,8 +113,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 1000,
-      y: 120,
+      x: 950,
+      y: 0,
       small: true,
     },
     {
@@ -125,8 +125,8 @@
       link: '',
       date: '2026-04-08',
       pin: '',
-      x: 100,
-      y: 950,
+      x: 0,
+      y: 850,
     },
     {
       id: 'notes',
@@ -136,8 +136,8 @@
       link: '',
       date: '2026-04-08',
       pin: '',
-      x: 320,
-      y: 950,
+      x: 400,
+      y: 870,
       small: true,
     },
     {
@@ -149,7 +149,7 @@
       date: '2026-04-08',
       pin: '',
       x: 200,
-      y: 1100,
+      y: 1000,
       small: true,
     },
     {
@@ -161,8 +161,8 @@
       linkLabel: 'Explore Library \u2197',
       date: '2026-04-13',
       pin: '',
-      x: -300,
-      y: 400,
+      x: -500,
+      y: 500,
     },
     {
       id: 'spectre-tile',
@@ -175,8 +175,8 @@
       ],
       date: '2026-04-13',
       pin: '',
-      x: -300,
-      y: 700,
+      x: -500,
+      y: 800,
     },
     {
       id: 'mediums',
@@ -186,8 +186,8 @@
       link: '',
       date: '2026-04-13',
       pin: '',
-      x: -200,
-      y: 350,
+      x: -250,
+      y: 280,
       small: true,
     },
     {
@@ -198,8 +198,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: 100,
-      y: 1250,
+      x: 200,
+      y: 1150,
     },
     {
       id: 'interview-questions',
@@ -209,8 +209,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: -250,
-      y: 1250,
+      x: -300,
+      y: 1150,
     },
     {
       id: 'interview-questions-info',
@@ -233,8 +233,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: -250,
-      y: 1500,
+      x: -300,
+      y: 1450,
       info: true,
     },
     {
@@ -245,8 +245,8 @@
       link: 'https://www.ted.com/talks/eric_berlow_simplifying_complexity',
       date: '2026-04-16',
       pin: '',
-      x: 500,
-      y: 1250,
+      x: 600,
+      y: 1000,
     },
   ];
 
@@ -274,7 +274,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 9; // bump to force reset to new defaults
+  const DATA_VERSION = 10; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -314,7 +314,7 @@
         // Only add default connections that involve at least one NEW card (not in old save)
         for (const dc of DEFAULT_CONNECTIONS) {
           const fromIsNew = !oldCardIds.has(dc[0]);
-          const toIsNew = !oldCardIds.has(dc[2]);
+          const toIsNew = !oldCardIds.has(dc[1]);
           if (fromIsNew || toIsNew) {
             const exists = CONNECTIONS.some(c =>
               c[0] === dc[0] && c[1] === dc[1] && c[2] === dc[2] && c[3] === dc[3]
@@ -1053,21 +1053,11 @@
   // Get reliable card dimensions
   function getCardSize(cardData, cardEl) {
     if (!cardEl) return [320, 200];
-    // Image card: use hardcoded width (420) and compute height from aspect ratio
-    if (cardData.image) {
-      const img = cardEl.querySelector('img');
-      if (img && img.naturalWidth > 0 && img.naturalHeight > 0) {
-        const w = 420;
-        const h = w * (img.naturalHeight / img.naturalWidth);
-        return [w, h];
-      }
-      // Image not decoded yet
-      return [420, -1];
-    }
-    // Non-image cards: offsetHeight is reliable since they have no async content
-    const w = cardEl.offsetWidth || 320;
-    const h = cardEl.offsetHeight || 200;
-    return [w, h];
+    const w = cardEl.offsetWidth;
+    const h = cardEl.offsetHeight;
+    // Image not loaded yet — height will be tiny
+    if (cardData.image && h < 10) return [w || 420, -1];
+    return [w || 320, h || 200];
   }
 
   function drawConnectors() {
