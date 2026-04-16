@@ -213,10 +213,39 @@
           CONNECTIONS = state.connections || [];
           return;
         }
-        // Old version — discard and use new defaults
+        // Version mismatch — merge: keep user positions but add any new default cards/connections
+        const oldCards = state.cards || [];
+        const oldConns = state.connections || [];
+        CARDS = JSON.parse(JSON.stringify(DEFAULT_CARDS));
+        CONNECTIONS = JSON.parse(JSON.stringify(DEFAULT_CONNECTIONS));
+        // Restore saved positions/edits for cards that still exist in defaults
+        for (const dc of CARDS) {
+          const saved = oldCards.find(c => c.id === dc.id);
+          if (saved) {
+            dc.x = saved.x;
+            dc.y = saved.y;
+            if (saved.title) dc.title = saved.title;
+            if (saved.desc) dc.desc = saved.desc;
+          }
+        }
+        // Keep any user-created cards that aren't in defaults
+        for (const oc of oldCards) {
+          if (!CARDS.find(c => c.id === oc.id)) {
+            CARDS.push(oc);
+          }
+        }
+        // Keep any user-created connections that aren't in defaults
+        for (const oc of oldConns) {
+          const exists = CONNECTIONS.some(dc =>
+            dc[0] === oc[0] && dc[1] === oc[1] && dc[2] === oc[2] && dc[3] === oc[3]
+          );
+          if (!exists) CONNECTIONS.push(oc);
+        }
+        saveState();
+        return;
       }
     } catch (e) { /* ignore corrupt data */ }
-    // Fall back to defaults
+    // No saved state — use defaults
     CARDS = JSON.parse(JSON.stringify(DEFAULT_CARDS));
     CONNECTIONS = JSON.parse(JSON.stringify(DEFAULT_CONNECTIONS));
     saveState();
