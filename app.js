@@ -237,6 +237,17 @@
       y: 1500,
       info: true,
     },
+    {
+      id: 'ted-simplifying-complexity',
+      title: 'Simplifying Complexity – Eric Berlow',
+      phase: 'Research',
+      desc: 'TED Talk by ecologist Eric Berlow on how stepping back and embracing complexity can lead to surprisingly simple answers.',
+      link: 'https://www.ted.com/talks/eric_berlow_simplifying_complexity',
+      date: '2026-04-16',
+      pin: '',
+      x: 500,
+      y: 1250,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -263,7 +274,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 8; // bump to force reset to new defaults
+  const DATA_VERSION = 9; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
