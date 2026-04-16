@@ -656,6 +656,9 @@
   const editToggle  = document.getElementById('editToggle');
   const addCardBtn  = document.getElementById('addCard');
   const addConnBtn  = document.getElementById('addConn');
+  const addImageBtn = document.getElementById('addImage');
+  const imageFileInput = document.getElementById('imageFileInput');
+  const dropOverlay = document.getElementById('dropOverlay');
   const exportBtn   = document.getElementById('exportData');
   const ctxMenu     = document.getElementById('ctxMenu');
   const modalOverlay = document.getElementById('modalOverlay');
@@ -670,7 +673,7 @@
     editMode = !editMode;
     document.body.classList.toggle('editing-mode', editMode);
     editToggle.textContent = editMode ? '🔒 Lock' : '✏️ Edit';
-    [addCardBtn, addConnBtn, exportBtn].forEach(b => b.style.display = editMode ? '' : 'none');
+    [addCardBtn, addConnBtn, addImageBtn, exportBtn].forEach(b => b.style.display = editMode ? '' : 'none');
     hideCtx();
     renderCards();
     if (!editMode) saveState();
@@ -698,6 +701,116 @@
 
   // ── Card dragging ──
   // ── Card dragging + handle connections ──
+
+  // ════════════════════════════════════════
+  //  IMAGE UPLOAD / DROP / PASTE
+  // ════════════════════════════════════════
+  const MAX_IMG_DIM = 1200; // max width or height in px
+  const IMG_QUALITY = 0.7;  // JPEG quality
+
+  function resizeImageToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let { width: w, height: h } = img;
+          if (w > MAX_IMG_DIM || h > MAX_IMG_DIM) {
+            const ratio = Math.min(MAX_IMG_DIM / w, MAX_IMG_DIM / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const cvs = document.createElement('canvas');
+          cvs.width = w; cvs.height = h;
+          cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(cvs.toDataURL('image/jpeg', IMG_QUALITY));
+        };
+        img.onerror = reject;
+        img.src = reader.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function placeImageCard(dataUrl, offsetIndex) {
+    const rect = viewport.getBoundingClientRect();
+    const cx = Math.round((-panX + rect.width / 2) / scale - 210 + offsetIndex * 40);
+    const cy = Math.round((-panY + rect.height / 2) / scale - 100 + offsetIndex * 40);
+    CARDS.push({
+      id: 'img-' + Date.now() + '-' + offsetIndex,
+      title: '',
+      phase: '',
+      desc: '',
+      link: '',
+      date: '',
+      pin: '',
+      x: cx,
+      y: cy,
+      image: dataUrl,
+    });
+  }
+
+  async function handleImageFiles(files) {
+    const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (!imgs.length) return;
+    for (let i = 0; i < imgs.length; i++) {
+      try {
+        const dataUrl = await resizeImageToBase64(imgs[i]);
+        placeImageCard(dataUrl, i);
+      } catch (e) {
+        console.error('Image processing failed:', e);
+      }
+    }
+    saveState();
+    renderCards();
+  }
+
+  // Button click → file picker
+  addImageBtn.addEventListener('click', () => {
+    imageFileInput.value = '';
+    imageFileInput.click();
+  });
+  imageFileInput.addEventListener('change', () => {
+    if (imageFileInput.files.length) handleImageFiles(imageFileInput.files);
+  });
+
+  // Drag & drop on viewport
+  let dragCounter = 0;
+  viewport.addEventListener('dragenter', (e) => {
+    if (!editMode) return;
+    e.preventDefault();
+    dragCounter++;
+    dropOverlay.classList.add('visible');
+  });
+  viewport.addEventListener('dragleave', (e) => {
+    if (!editMode) return;
+    dragCounter--;
+    if (dragCounter <= 0) { dragCounter = 0; dropOverlay.classList.remove('visible'); }
+  });
+  viewport.addEventListener('dragover', (e) => {
+    if (!editMode) return;
+    e.preventDefault();
+  });
+  viewport.addEventListener('drop', (e) => {
+    if (!editMode) return;
+    e.preventDefault();
+    dragCounter = 0;
+    dropOverlay.classList.remove('visible');
+    if (e.dataTransfer.files.length) handleImageFiles(e.dataTransfer.files);
+  });
+
+  // Paste (Ctrl+V)
+  document.addEventListener('paste', (e) => {
+    if (!editMode) return;
+    // Don't intercept paste inside input/textarea
+    if (e.target.closest('input, textarea, [contenteditable]')) return;
+    const items = Array.from(e.clipboardData.items).filter(i => i.type.startsWith('image/'));
+    if (!items.length) return;
+    e.preventDefault();
+    const files = items.map(i => i.getAsFile()).filter(Boolean);
+    if (files.length) handleImageFiles(files);
+  });
   const GRID = 20;
   function snapTo(v) { return Math.round(v / GRID) * GRID; }
 

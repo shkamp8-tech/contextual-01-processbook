@@ -28,6 +28,8 @@
       <button class="btn-text" id="editToggle" title="Toggle edit mode">✏️ Edit</button>
       <button class="btn-text btn-add" id="addCard" title="Add card" style="display:none">+ Card</button>
       <button class="btn-text btn-add" id="addConn" title="Add connection" style="display:none">+ Line</button>
+      <button class="btn-text btn-add" id="addImage" title="Add image" style="display:none">📷 Image</button>
+      <input type="file" id="imageFileInput" accept="image/*" multiple style="display:none" />
       <button class="btn-text btn-export" id="exportData" title="Export JSON" style="display:none">💾 Export</button>
       <span class="topbar__zoom" id="zoomLabel">100%</span>
       <button class="btn-icon" id="zoomIn" title="Zoom in">+</button>
@@ -39,6 +41,7 @@
 
   <div class="viewport" id="viewport">
     <div class="canvas" id="canvas"></div>
+    <div class="drop-overlay" id="dropOverlay">Drop image(s) here</div>
   </div>
 
   <div class="minimap" id="minimap"></div>

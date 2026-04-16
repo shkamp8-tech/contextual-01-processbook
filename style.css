@@ -167,6 +167,26 @@ body.grabbing { cursor: grabbing; }
   will-change: transform;
 }
 
+/* ── Drop overlay ── */
+.drop-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  background: rgba(var(--accent-rgb, 66, 133, 244), 0.15);
+  border: 3px dashed var(--accent, #4285f4);
+  border-radius: 12px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--accent, #4285f4);
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.drop-overlay.visible {
+  display: flex;
+}
+
 /* ── Dot grid background ── */
 .viewport::before {
   content: '';
