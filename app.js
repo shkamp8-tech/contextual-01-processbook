@@ -599,31 +599,23 @@
       setupDrag();
     });
 
-    // Redraw connectors after all images are fully loaded and laid out
+    // Redraw connectors after each image loads
     const imgs = canvas.querySelectorAll('img');
     if (imgs.length > 0) {
-      let settled = false;
-      function redrawWhenReady() {
-        if (settled) return;
-        const allReady = Array.from(imgs).every(img => img.complete && img.naturalHeight > 0);
-        if (allReady) {
-          settled = true;
-          requestAnimationFrame(() => {
-            drawConnectors();
-            updateMinimap();
-          });
-        }
+      function redraw() {
+        requestAnimationFrame(() => {
+          drawConnectors();
+          updateMinimap();
+        });
       }
       imgs.forEach(img => {
-        img.addEventListener('load', redrawWhenReady, { once: true });
+        if (!img.complete) {
+          img.addEventListener('load', redraw, { once: true });
+          img.addEventListener('error', redraw, { once: true });
+        }
       });
-      // Also poll briefly in case load events already fired
-      const poll = setInterval(() => {
-        redrawWhenReady();
-        if (settled) clearInterval(poll);
-      }, 100);
-      // Stop polling after 5s max
-      setTimeout(() => { clearInterval(poll); redrawWhenReady(); }, 5000);
+      // Also redraw after a short delay in case images were cached
+      setTimeout(redraw, 150);
     }
   }
 
@@ -1050,14 +1042,18 @@
   }
 
   // ── Draw connectors (clickable in edit mode) ──
-  // Get reliable card dimensions
-  function getCardSize(cardData, cardEl) {
-    if (!cardEl) return [320, 200];
-    const w = cardEl.offsetWidth;
-    const h = cardEl.offsetHeight;
-    // Image not loaded yet — height will be tiny
-    if (cardData.image && h < 10) return [w || 420, -1];
-    return [w || 320, h || 200];
+  // Get the attachment point for a card edge using the actual rendered position
+  function getAttachPoint(cardEl, side) {
+    const r = cardEl.getBoundingClientRect();
+    // Skip if element has no size (image not loaded yet)
+    if (r.width < 5 || r.height < 5) return null;
+    switch (side) {
+      case 'top':    return clientToCanvas(r.left + r.width / 2, r.top);
+      case 'bottom': return clientToCanvas(r.left + r.width / 2, r.bottom);
+      case 'left':   return clientToCanvas(r.left, r.top + r.height / 2);
+      case 'right':  return clientToCanvas(r.right, r.top + r.height / 2);
+    }
+    return null;
   }
 
   function drawConnectors() {
@@ -1069,28 +1065,19 @@
     svg.setAttribute('style', 'position:absolute;top:0;left:0;width:9999px;height:9999px;z-index:1;overflow:visible;pointer-events:' + (editMode ? 'auto' : 'none') + ';');
 
     CONNECTIONS.forEach(([fromId, toId, fromSide, toSide], idx) => {
-      const from = CARDS.find(c => c.id === fromId);
-      const to   = CARDS.find(c => c.id === toId);
-      if (!from || !to) return;
       const fromEl = document.getElementById('card-' + fromId);
       const toEl   = document.getElementById('card-' + toId);
       if (!fromEl || !toEl) return;
 
-      const [fw, fh] = getCardSize(from, fromEl);
-      const [tw, th] = getCardSize(to, toEl);
-      // Skip if an image card hasn't loaded yet (height = -1)
-      if (fh < 0 || th < 0) return;
-      let x1, y1, x2, y2;
-      if (fromSide === 'bottom') { x1 = from.x + fw / 2; y1 = from.y + fh; }
-      else if (fromSide === 'top') { x1 = from.x + fw / 2; y1 = from.y; }
-      else if (fromSide === 'right') { x1 = from.x + fw; y1 = from.y + fh / 2; }
-      else if (fromSide === 'left') { x1 = from.x; y1 = from.y + fh / 2; }
-      if (toSide === 'top') { x2 = to.x + tw / 2; y2 = to.y; }
-      else if (toSide === 'bottom') { x2 = to.x + tw / 2; y2 = to.y + th; }
-      else if (toSide === 'left') { x2 = to.x; y2 = to.y + th / 2; }
-      else if (toSide === 'right') { x2 = to.x + tw; y2 = to.y + th / 2; }
-      let cx1, cy1, cx2, cy2;
+      const p1 = getAttachPoint(fromEl, fromSide);
+      const p2 = getAttachPoint(toEl, toSide);
+      if (!p1 || !p2) return;  // skip if card not fully rendered
+
+      const [x1, y1] = p1;
+      const [x2, y2] = p2;
+
       const dist = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) * 0.4;
+      let cx1, cy1, cx2, cy2;
       if (fromSide === 'bottom') { cx1 = x1; cy1 = y1 + dist; }
       else if (fromSide === 'top') { cx1 = x1; cy1 = y1 - dist; }
       else if (fromSide === 'right') { cx1 = x1 + dist; cy1 = y1; }
