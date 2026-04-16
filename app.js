@@ -177,6 +177,18 @@
       x: -300,
       y: 700,
     },
+    {
+      id: 'mediums',
+      title: 'Mediums',
+      phase: 'Research',
+      desc: '',
+      link: '',
+      date: '2026-04-13',
+      pin: '',
+      x: -200,
+      y: 350,
+      small: true,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -200,7 +212,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 4; // bump to force reset to new defaults
+  const DATA_VERSION = 5; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
