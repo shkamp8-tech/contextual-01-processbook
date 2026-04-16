@@ -189,6 +189,28 @@
       y: 350,
       small: true,
     },
+    {
+      id: 'conversation-notes',
+      title: 'Conversation Notes',
+      phase: 'Research',
+      desc: 'Key takeaways and reflections from conversations with peers, mentors, and stakeholders during the research process.',
+      link: '',
+      date: '2026-04-16',
+      pin: '',
+      x: 100,
+      y: 1250,
+    },
+    {
+      id: 'interview-questions',
+      title: 'Interview Questions',
+      phase: 'Research',
+      desc: 'Prepared questions and topic guides used during interviews to gain deeper insight into user perspectives and expert knowledge.',
+      link: '',
+      date: '2026-04-16',
+      pin: '',
+      x: -250,
+      y: 1250,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -206,13 +228,15 @@
     ['wordweb', 'mediums', 'bottom', 'top'],
     ['mediums', 'library-of-babel', 'bottom', 'top'],
     ['mediums', 'spectre-tile', 'bottom', 'top'],
+    ['interview', 'conversation-notes', 'bottom', 'top'],
+    ['interview', 'interview-questions', 'bottom', 'top'],
   ];
 
   // ════════════════════════════════════════
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 5; // bump to force reset to new defaults
+  const DATA_VERSION = 6; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -223,6 +247,7 @@
         if (state.version === DATA_VERSION) {
           CARDS = state.cards || [];
           CONNECTIONS = state.connections || [];
+          console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }
         // Version mismatch — merge: keep user positions but add any new default cards/connections
@@ -265,12 +290,16 @@
 
   function saveState() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      const data = JSON.stringify({
         version: DATA_VERSION,
         cards: CARDS,
         connections: CONNECTIONS,
-      }));
-    } catch (e) { /* storage full — silently fail */ }
+      });
+      localStorage.setItem(STORAGE_KEY, data);
+      console.log('Saved:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
+    } catch (e) {
+      console.error('Failed to save state:', e);
+    }
   }
 
   loadState();
