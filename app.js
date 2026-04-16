@@ -212,6 +212,31 @@
       x: -250,
       y: 1250,
     },
+    {
+      id: 'interview-questions-info',
+      title: '',
+      phase: 'Research',
+      bullets: [
+        'Do you work rather from something simple and build that up to something more complex or the other way around?',
+        '↳ Do you notice that starting from one or the other side leads to different kinds of outcomes?',
+        '↳ Have you ever started a project and midway thought it needed a completely different approach?',
+        'Do you try to keep the original identity of something, or are you more interested in what it is not or can be through changing, transforming or translating it?',
+        '↳ Have you ever transformed something so much that the meaning behind it was changed?',
+        '↳ Must the source be visible in the end result?',
+        'When you change/transform/translate something, how do you decide which details need to stay and which ones can be sacrificed?',
+        '↳ Are there reoccurring details in your process of transforming or translating?',
+        '↳ Have you ever removed something small and realized it changed the whole project?',
+        'When two opposites meet in a project, do you look for balance, tension or something completely different?',
+        '↳ Did the outcome of some projects end up at a completely different place than expected through this approach?',
+        '↳ Does that approach work through a natural feeling or more based on some rule?',
+      ],
+      link: '',
+      date: '2026-04-16',
+      pin: '',
+      x: -250,
+      y: 1500,
+      info: true,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -238,7 +263,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 7; // bump to force reset to new defaults
+  const DATA_VERSION = 8; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -252,12 +277,12 @@
           console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }
-        // Version mismatch — merge: keep user positions but add any new default cards/connections
+        // Version mismatch — merge: keep user positions/connections, only add truly new stuff
         const oldCards = state.cards || [];
         const oldConns = state.connections || [];
+        const oldCardIds = new Set(oldCards.map(c => c.id));
         CARDS = JSON.parse(JSON.stringify(DEFAULT_CARDS));
-        CONNECTIONS = JSON.parse(JSON.stringify(DEFAULT_CONNECTIONS));
-        // Restore saved positions/edits for cards that still exist in defaults
+        // Restore saved positions/edits for cards that existed before
         for (const dc of CARDS) {
           const saved = oldCards.find(c => c.id === dc.id);
           if (saved) {
@@ -273,12 +298,18 @@
             CARDS.push(oc);
           }
         }
-        // Keep any user-created connections that aren't in defaults
-        for (const oc of oldConns) {
-          const exists = CONNECTIONS.some(dc =>
-            dc[0] === oc[0] && dc[1] === oc[1] && dc[2] === oc[2] && dc[3] === oc[3]
-          );
-          if (!exists) CONNECTIONS.push(oc);
+        // Start with the user's saved connections
+        CONNECTIONS = JSON.parse(JSON.stringify(oldConns));
+        // Only add default connections that involve at least one NEW card (not in old save)
+        for (const dc of DEFAULT_CONNECTIONS) {
+          const fromIsNew = !oldCardIds.has(dc[0]);
+          const toIsNew = !oldCardIds.has(dc[2]);
+          if (fromIsNew || toIsNew) {
+            const exists = CONNECTIONS.some(c =>
+              c[0] === dc[0] && c[1] === dc[1] && c[2] === dc[2] && c[3] === dc[3]
+            );
+            if (!exists) CONNECTIONS.push(JSON.parse(JSON.stringify(dc)));
+          }
         }
         saveState();
         return;
@@ -506,7 +537,10 @@
       if (card.info) {
         let infoContent = '';
         if (card.bullets && card.bullets.length) {
-          infoContent = `<ul class="card__bullets">${card.bullets.map(b => `<li>${sanitize(b)}</li>`).join('')}</ul>`;
+          infoContent = `<ul class="card__bullets">${card.bullets.map(b => {
+            const isSub = b.startsWith('\u21b3');
+            return `<li${isSub ? ' class="bullet-sub"' : ''}>${sanitize(b)}</li>`;
+          }).join('')}</ul>`;
         } else if (card.desc) {
           infoContent = `<p class="card__desc">${sanitize(card.desc)}</p>`;
         }
@@ -639,6 +673,7 @@
     [addCardBtn, addConnBtn, exportBtn].forEach(b => b.style.display = editMode ? '' : 'none');
     hideCtx();
     renderCards();
+    if (!editMode) saveState();
   });
 
   // ── Context menu ──

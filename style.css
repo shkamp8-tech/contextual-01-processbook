@@ -319,6 +319,12 @@ body.grabbing { cursor: grabbing; }
 .card__bullets li {
   margin-bottom: 6px;
 }
+.card__bullets li.bullet-sub {
+  list-style: none;
+  margin-left: 4px;
+  opacity: 0.75;
+  font-size: 0.78rem;
+}
 .card__bullets li:last-child {
   margin-bottom: 0;
 }
