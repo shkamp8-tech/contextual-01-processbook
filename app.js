@@ -4,7 +4,7 @@
   // ════════════════════════════════════════
   //  ACCESS CODE GATE
   // ════════════════════════════════════════
-  const ACCESS_PIN = '0003';
+  const ACCESS_PIN = '0000';
   const lockscreen = document.getElementById('lockscreen');
   const lockDigits = lockscreen.querySelectorAll('.lock__digit');
   const lockError  = document.getElementById('lockError');
@@ -243,10 +243,55 @@
       phase: 'Research',
       desc: 'TED Talk by ecologist Eric Berlow on how stepping back and embracing complexity can lead to surprisingly simple answers.',
       link: 'https://www.ted.com/talks/eric_berlow_simplifying_complexity',
+      linkLabel: 'Watch TED Talk ↗',
       date: '2026-04-16',
       pin: '',
       x: 600,
       y: 1000,
+    },
+    {
+      id: 'interview-analysis',
+      title: 'Interview Analysis',
+      phase: 'Analysis',
+      desc: 'Analysis and synthesis of key findings from the conducted interviews, identifying patterns and recurring themes.',
+      link: '',
+      date: '2026-04-17',
+      pin: '',
+      x: 0,
+      y: 1150,
+    },
+    {
+      id: 'visualisation-tools',
+      title: 'Visualisation Tools',
+      phase: 'Research',
+      desc: 'Exploration of tools and methods for visualising complex information, relationships, and data structures.',
+      link: '',
+      date: '2026-04-17',
+      pin: '',
+      x: 600,
+      y: 500,
+    },
+    {
+      id: 'questions',
+      title: 'Questions',
+      phase: 'Research',
+      desc: 'Core questions driving the research and design process.',
+      link: '',
+      date: '2026-04-17',
+      pin: '',
+      x: 600,
+      y: 700,
+    },
+    {
+      id: 'porphyrius-tree',
+      title: 'The Porphyrius Tree',
+      phase: 'Research',
+      desc: 'A hierarchical classification system by Porphyry of Tyre — one of the earliest tree diagrams, organising concepts through division from the most general to the most specific.',
+      link: '',
+      date: '2026-04-17',
+      pin: '',
+      x: 600,
+      y: 200,
     },
   ];
 
@@ -268,13 +313,14 @@
     ['interview', 'conversation-notes', 'bottom', 'top'],
     ['interview', 'interview-questions', 'bottom', 'top'],
     ['interview-questions', 'interview-questions-info', 'bottom', 'top'],
+    ['interview', 'interview-analysis', 'bottom', 'top'],
   ];
 
   // ════════════════════════════════════════
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 10; // bump to force reset to new defaults
+  const DATA_VERSION = 11; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {

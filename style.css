@@ -160,6 +160,7 @@ body.grabbing { cursor: grabbing; }
   position: fixed;
   top: 52px; left: 0; right: 0; bottom: 0;
   overflow: hidden;
+  touch-action: none;
 }
 .canvas {
   position: absolute;
