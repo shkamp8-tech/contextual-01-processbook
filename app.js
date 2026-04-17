@@ -66,8 +66,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 450,
-      y: -20,
+      x: 340,
+      y: -200,
       image: 'assets/fascination.jpg',
     },
     {
@@ -78,8 +78,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 450,
-      y: 350,
+      x: 340,
+      y: 200,
       info: true,
     },
     {
@@ -90,8 +90,8 @@
       link: 'https://shkamp8-tech.github.io/wordweb/',
       date: '2026-04-08',
       pin: '0002',
-      x: 0,
-      y: 500,
+      x: -300,
+      y: 260,
     },
     {
       id: 'wordweb-preview',
@@ -101,8 +101,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 450,
-      y: 500,
+      x: -720,
+      y: 180,
       image: 'assets/wordweb.png',
     },
     {
@@ -113,8 +113,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 950,
-      y: 0,
+      x: -200,
+      y: 40,
       small: true,
     },
     {
@@ -125,8 +125,8 @@
       link: 'https://shkamp8-tech.github.io/interview-transcript/',
       date: '2026-04-08',
       pin: '0003',
-      x: 0,
-      y: 850,
+      x: -60,
+      y: 1700,
     },
     {
       id: 'notes',
@@ -136,8 +136,8 @@
       link: '',
       date: '2026-04-08',
       pin: '',
-      x: 400,
-      y: 870,
+      x: 20,
+      y: 840,
       small: true,
     },
     {
@@ -148,8 +148,8 @@
       link: '',
       date: '2026-04-08',
       pin: '',
-      x: 200,
-      y: 1000,
+      x: -160,
+      y: 1020,
       small: true,
     },
     {
@@ -161,8 +161,8 @@
       linkLabel: 'Explore Library \u2197',
       date: '2026-04-13',
       pin: '',
-      x: -500,
-      y: 500,
+      x: 500,
+      y: 480,
     },
     {
       id: 'spectre-tile',
@@ -175,8 +175,8 @@
       ],
       date: '2026-04-13',
       pin: '',
-      x: -500,
-      y: 800,
+      x: 500,
+      y: 780,
     },
     {
       id: 'mediums',
@@ -186,8 +186,8 @@
       link: '',
       date: '2026-04-13',
       pin: '',
-      x: -250,
-      y: 280,
+      x: 140,
+      y: 600,
       small: true,
     },
     {
@@ -198,8 +198,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: 200,
-      y: 1150,
+      x: -40,
+      y: 1220,
     },
     {
       id: 'interview-questions',
@@ -209,8 +209,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: -300,
-      y: 1150,
+      x: -40,
+      y: 1480,
     },
     {
       id: 'interview-questions-info',
@@ -233,8 +233,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: -300,
-      y: 1450,
+      x: -560,
+      y: 1600,
       info: true,
     },
     {
@@ -246,8 +246,8 @@
       linkLabel: 'Watch TED Talk ↗',
       date: '2026-04-16',
       pin: '',
-      x: 600,
-      y: 1000,
+      x: -600,
+      y: 820,
     },
     {
       id: 'interview-analysis',
@@ -257,8 +257,8 @@
       link: '',
       date: '2026-04-17',
       pin: '',
-      x: 0,
-      y: 1150,
+      x: -40,
+      y: 1960,
     },
     {
       id: 'visualisation-tools',
@@ -268,8 +268,8 @@
       link: '',
       date: '2026-04-17',
       pin: '',
-      x: 600,
-      y: 500,
+      x: -1060,
+      y: 940,
     },
     {
       id: 'questions',
@@ -279,8 +279,8 @@
       link: '',
       date: '2026-04-17',
       pin: '',
-      x: 600,
-      y: 700,
+      x: -680,
+      y: 1080,
     },
     {
       id: 'porphyrius-tree',
@@ -290,8 +290,8 @@
       link: '',
       date: '2026-04-17',
       pin: '',
-      x: 600,
-      y: 200,
+      x: 400,
+      y: 1200,
     },
   ];
 
@@ -320,7 +320,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 11; // bump to force reset to new defaults
+  const DATA_VERSION = 12; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
