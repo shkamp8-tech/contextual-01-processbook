@@ -320,7 +320,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 12; // bump to force reset to new defaults
+  const DATA_VERSION = 13; // bump to force reset to new defaults
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -334,40 +334,18 @@
           console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }
-        // Version mismatch — merge: keep user positions/connections, only add truly new stuff
+        // Version mismatch — reset defaults (positions + connections), keep only user-created cards
         const oldCards = state.cards || [];
-        const oldConns = state.connections || [];
-        const oldCardIds = new Set(oldCards.map(c => c.id));
+        const defaultIds = new Set(DEFAULT_CARDS.map(c => c.id));
         CARDS = JSON.parse(JSON.stringify(DEFAULT_CARDS));
-        // Restore saved positions/edits for cards that existed before
-        for (const dc of CARDS) {
-          const saved = oldCards.find(c => c.id === dc.id);
-          if (saved) {
-            dc.x = saved.x;
-            dc.y = saved.y;
-            if (saved.title) dc.title = saved.title;
-            if (saved.desc) dc.desc = saved.desc;
-          }
-        }
-        // Keep any user-created cards that aren't in defaults
+        // Keep user-created cards (e.g. uploaded images) that aren't in defaults
         for (const oc of oldCards) {
-          if (!CARDS.find(c => c.id === oc.id)) {
+          if (!defaultIds.has(oc.id)) {
             CARDS.push(oc);
           }
         }
-        // Start with the user's saved connections
-        CONNECTIONS = JSON.parse(JSON.stringify(oldConns));
-        // Only add default connections that involve at least one NEW card (not in old save)
-        for (const dc of DEFAULT_CONNECTIONS) {
-          const fromIsNew = !oldCardIds.has(dc[0]);
-          const toIsNew = !oldCardIds.has(dc[1]);
-          if (fromIsNew || toIsNew) {
-            const exists = CONNECTIONS.some(c =>
-              c[0] === dc[0] && c[1] === dc[1] && c[2] === dc[2] && c[3] === dc[3]
-            );
-            if (!exists) CONNECTIONS.push(JSON.parse(JSON.stringify(dc)));
-          }
-        }
+        // Fully reset connections to defaults (drops user-deleted defaults & old custom ones)
+        CONNECTIONS = JSON.parse(JSON.stringify(DEFAULT_CONNECTIONS));
         saveState();
         return;
       }
