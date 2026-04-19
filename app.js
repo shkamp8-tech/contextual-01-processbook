@@ -8,10 +8,27 @@
   const lockscreen = document.getElementById('lockscreen');
   const lockDigits = lockscreen.querySelectorAll('.lock__digit');
   const lockError  = document.getElementById('lockError');
+  const welcome    = document.getElementById('welcome');
+  const welcomeContinue = document.getElementById('welcomeContinue');
+
+  function showWelcome() {
+    if (sessionStorage.getItem('pb_welcome_seen') === '1') {
+      welcome.classList.add('hidden');
+    } else {
+      welcome.classList.remove('hidden');
+    }
+  }
+  welcomeContinue.addEventListener('click', () => {
+    sessionStorage.setItem('pb_welcome_seen', '1');
+    welcome.classList.add('hidden');
+  });
 
   // If already unlocked this session, skip
   if (sessionStorage.getItem('pb_unlocked') === '1') {
     lockscreen.classList.add('hidden');
+    showWelcome();
+  } else {
+    welcome.classList.add('hidden');
   }
 
   lockDigits.forEach((input, i) => {
@@ -26,6 +43,7 @@
         if (code === ACCESS_PIN) {
           sessionStorage.setItem('pb_unlocked', '1');
           lockscreen.classList.add('hidden');
+          showWelcome();
         } else {
           lockError.textContent = 'Incorrect code';
           lockDigits.forEach(d => {
@@ -687,6 +705,7 @@
   const imageFileInput = document.getElementById('imageFileInput');
   const dropOverlay = document.getElementById('dropOverlay');
   const exportBtn   = document.getElementById('exportData');
+  const resetBtn    = document.getElementById('resetData');
   const ctxMenu     = document.getElementById('ctxMenu');
   const modalOverlay = document.getElementById('modalOverlay');
   const cardForm    = document.getElementById('cardForm');
@@ -700,7 +719,7 @@
     editMode = !editMode;
     document.body.classList.toggle('editing-mode', editMode);
     editToggle.textContent = editMode ? '🔒 Lock' : '✏️ Edit';
-    [addCardBtn, addConnBtn, addImageBtn, exportBtn].forEach(b => b.style.display = editMode ? '' : 'none');
+    [addCardBtn, addConnBtn, addImageBtn, exportBtn, resetBtn].forEach(b => b.style.display = editMode ? '' : 'none');
     hideCtx();
     renderCards();
     if (!editMode) saveState();
@@ -1260,6 +1279,13 @@
       ta.remove();
       alert('JSON copied to clipboard!');
     });
+  });
+
+  // Reset to defaults
+  resetBtn.addEventListener('click', () => {
+    if (!confirm('Reset to default layout? Your custom positions and uploaded images will be lost.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
   });
 
   // ════════════════════════════════════════

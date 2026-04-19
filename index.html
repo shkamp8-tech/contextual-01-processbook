@@ -22,6 +22,36 @@
     </div>
   </div>
 
+  <!-- Welcome / instructions screen -->
+  <div class="welcome" id="welcome">
+    <div class="welcome__panel">
+      <h2 class="welcome__title">📘 Welcome to my Process Book</h2>
+      <p class="welcome__lead">An interactive canvas documenting my creative process — research, ideas, conversations, and connections.</p>
+
+      <div class="welcome__section">
+        <h3>🧭 How to navigate</h3>
+        <ul>
+          <li><b>Drag</b> the empty canvas to <b>pan</b> around.</li>
+          <li><b>Scroll</b> the mouse wheel to <b>zoom</b> toward the cursor.</li>
+          <li>On <b>touch</b>: drag with one finger to pan, pinch with two fingers to zoom.</li>
+          <li>Click the <b>+</b> / <b>−</b> / <b>⌂</b> buttons in the top bar to zoom in, out, or reset.</li>
+        </ul>
+      </div>
+
+      <div class="welcome__section">
+        <h3>🔑 Pin codes</h3>
+        <p>Some cards link to other parts of my work and have a small <b>pin code</b> in the bottom right. Use the same access code system if you encounter another locked screen — the pin codes you find here unlock those.</p>
+      </div>
+
+      <div class="welcome__section welcome__disclaimer">
+        <h3>⚠️ Disclaimer</h3>
+        <p>This process book is <b>still under construction</b>. Dates, descriptions, links and the overall layout may not yet be final. Some sections are placeholders. You're seeing a snapshot of work in progress.</p>
+      </div>
+
+      <button class="welcome__btn" id="welcomeContinue">Continue →</button>
+    </div>
+  </div>
+
   <header class="topbar">
     <h1>📘 Process Book</h1>
     <div class="topbar__right">
@@ -30,7 +60,8 @@
       <button class="btn-text btn-add" id="addConn" title="Add connection" style="display:none">+ Line</button>
       <button class="btn-text btn-add" id="addImage" title="Add image" style="display:none">📷 Image</button>
       <input type="file" id="imageFileInput" accept="image/*" multiple style="display:none" />
-      <button class="btn-text btn-export" id="exportData" title="Export JSON" style="display:none">💾 Export</button>
+      <button class="btn-text btn-export" id="exportData" title="Copy current layout JSON to clipboard — send to developer to make it the new default" style="display:none">📤 Share Layout</button>
+      <button class="btn-text btn-export" id="resetData" title="Reset to default layout (your changes will be lost)" style="display:none">🔄 Reset</button>
       <span class="topbar__zoom" id="zoomLabel">100%</span>
       <button class="btn-icon" id="zoomIn" title="Zoom in">+</button>
       <button class="btn-icon" id="zoomOut" title="Zoom out">−</button>
