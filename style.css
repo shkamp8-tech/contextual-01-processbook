@@ -228,6 +228,11 @@ body.grabbing { cursor: grabbing; }
 .topbar h1 { font-size: 1rem; font-weight: 700; }
 .topbar__right { display: flex; gap: 10px; align-items: center; }
 .topbar__zoom { font-size: 0.78rem; color: var(--text-muted); min-width: 44px; text-align: center; }
+.sync-status { font-size: 0.85rem; opacity: 0.6; transition: opacity .2s; cursor: help; user-select: none; }
+.sync-status.syncing { opacity: 1; animation: pulse 1.2s infinite; }
+.sync-status.error { opacity: 1; color: #e57373; }
+.sync-status.ok { opacity: 0.8; color: #66bb6a; }
+@keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
 
 .btn-icon {
   width: 36px; height: 36px; border-radius: 50%;

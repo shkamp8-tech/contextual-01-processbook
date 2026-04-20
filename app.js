@@ -339,6 +339,11 @@
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
   const DATA_VERSION = 13; // bump to force reset to new defaults
+  // ── Cloud sync (JSONBlob.com — anonymous, no API key) ──
+  const REMOTE_URL = 'https://jsonblob.com/api/jsonBlob/019daa1d-7d7e-78db-98d4-98a9fef526cf';
+  const SYNC_POLL_MS = 10000;
+  let lastSyncedTimestamp = 0; // last timestamp we know about (local or remote)
+  let remoteSyncEnabled = true;
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -349,6 +354,7 @@
         if (state.version === DATA_VERSION) {
           CARDS = state.cards || [];
           CONNECTIONS = state.connections || [];
+          lastSyncedTimestamp = state.timestamp || 0;
           console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }
@@ -376,16 +382,89 @@
 
   function saveState() {
     try {
+      const timestamp = Date.now();
+      lastSyncedTimestamp = timestamp;
       const data = JSON.stringify({
         version: DATA_VERSION,
+        timestamp,
         cards: CARDS,
         connections: CONNECTIONS,
       });
       localStorage.setItem(STORAGE_KEY, data);
       console.log('Saved:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
+      // Push to cloud (fire-and-forget)
+      pushToRemote(data);
     } catch (e) {
       console.error('Failed to save state:', e);
     }
+  }
+
+  function setSyncStatus(state, title) {
+    const el = document.getElementById('syncStatus');
+    if (!el) return;
+    el.classList.remove('syncing', 'error', 'ok');
+    if (state) el.classList.add(state);
+    if (state === 'syncing') el.textContent = '⟳';
+    else if (state === 'error') el.textContent = '⚠️';
+    else if (state === 'ok') el.textContent = '☁️';
+    else el.textContent = '☁️';
+    if (title) el.title = title;
+  }
+
+  async function pushToRemote(jsonString) {
+    if (!remoteSyncEnabled) return;
+    setSyncStatus('syncing', 'Uploading changes…');
+    try {
+      const res = await fetch(REMOTE_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: jsonString,
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString());
+    } catch (e) {
+      console.warn('Cloud sync push failed:', e);
+      setSyncStatus('error', 'Sync failed (offline?). Changes saved locally.');
+    }
+  }
+
+  async function pullFromRemote() {
+    if (!remoteSyncEnabled) return;
+    try {
+      const res = await fetch(REMOTE_URL, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store',
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const remote = await res.json();
+      if (!remote || remote.version !== DATA_VERSION) return;
+      const remoteTs = remote.timestamp || 0;
+      if (remoteTs > lastSyncedTimestamp && Array.isArray(remote.cards)) {
+        // Apply remote state
+        CARDS = remote.cards;
+        CONNECTIONS = remote.connections || [];
+        lastSyncedTimestamp = remoteTs;
+        // Mirror to localStorage so reload is fast
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            version: DATA_VERSION,
+            timestamp: remoteTs,
+            cards: CARDS,
+            connections: CONNECTIONS,
+          }));
+        } catch (e) {}
+        if (typeof renderCards === 'function') renderCards();
+        setSyncStatus('ok', 'Updated from cloud ' + new Date().toLocaleTimeString());
+        console.log('Pulled remote update:', CARDS.length, 'cards');
+        return true;
+      }
+      setSyncStatus('ok', 'Up to date · ' + new Date().toLocaleTimeString());
+    } catch (e) {
+      console.warn('Cloud sync pull failed:', e);
+      setSyncStatus('error', 'Cloud unreachable. Working offline.');
+    }
+    return false;
   }
 
   loadState();
@@ -1293,4 +1372,20 @@
   // ════════════════════════════════════════
   renderCards();
   resetView();
+
+  // ── Cloud sync: pull on startup, then poll periodically ──
+  setSyncStatus('syncing', 'Connecting to cloud…');
+  pullFromRemote().then(() => {
+    // If remote was empty/older, push our local state to seed it
+    if (lastSyncedTimestamp === 0) {
+      saveState();
+    }
+  });
+  setInterval(() => {
+    if (!editMode) pullFromRemote();
+  }, SYNC_POLL_MS);
+  // Also pull when tab becomes visible again
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !editMode) pullFromRemote();
+  });
 })();
