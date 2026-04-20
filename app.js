@@ -339,8 +339,9 @@
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
   const DATA_VERSION = 13; // bump to force reset to new defaults
-  // ── Cloud sync (JSONBlob.com — anonymous, no API key) ──
-  const REMOTE_URL = 'https://jsonblob.com/api/jsonBlob/019daa1d-7d7e-78db-98d4-98a9fef526cf';
+  // ── Cloud sync (textdb.dev — anonymous, no API key, CORS-enabled) ──
+  const SYNC_KEY = 'contextual-01-shkamp8-processbook';
+  const REMOTE_URL = 'https://textdb.dev/api/data/' + SYNC_KEY;
   const SYNC_POLL_MS = 10000;
   let lastSyncedTimestamp = 0; // last timestamp we know about (local or remote)
   let remoteSyncEnabled = true;
@@ -416,9 +417,9 @@
     setSyncStatus('syncing', 'Uploading changes…');
     try {
       const res = await fetch(REMOTE_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: jsonString,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'value=' + encodeURIComponent(jsonString),
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString());
@@ -431,13 +432,18 @@
   async function pullFromRemote() {
     if (!remoteSyncEnabled) return;
     try {
-      const res = await fetch(REMOTE_URL, {
+      const res = await fetch(REMOTE_URL + '?_=' + Date.now(), {
         method: 'GET',
-        headers: { 'Accept': 'application/json' },
         cache: 'no-store',
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      const remote = await res.json();
+      const text = await res.text();
+      // textdb.dev returns 'value=<url-encoded JSON>'
+      let json = text;
+      if (json.startsWith('value=')) json = decodeURIComponent(json.slice(6));
+      if (!json || json.trim() === '') { setSyncStatus('ok', 'Cloud is empty'); return false; }
+      let remote;
+      try { remote = JSON.parse(json); } catch (e) { setSyncStatus('error', 'Cloud data invalid'); return false; }
       if (!remote || remote.version !== DATA_VERSION) return;
       const remoteTs = remote.timestamp || 0;
       if (remoteTs > lastSyncedTimestamp && Array.isArray(remote.cards)) {
