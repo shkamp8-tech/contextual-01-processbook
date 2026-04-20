@@ -412,39 +412,46 @@
     if (title) el.title = title;
   }
 
+  function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    return fetch(url, { ...options, signal: ctrl.signal })
+      .finally(() => clearTimeout(timer));
+  }
+
   async function pushToRemote(jsonString) {
     if (!remoteSyncEnabled) return;
     setSyncStatus('syncing', 'Uploading changes…');
     try {
-      const res = await fetch(REMOTE_URL, {
+      const res = await fetchWithTimeout(REMOTE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'value=' + encodeURIComponent(jsonString),
-      });
+      }, 10000);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString());
     } catch (e) {
       console.warn('Cloud sync push failed:', e);
-      setSyncStatus('error', 'Sync failed (offline?). Changes saved locally.');
+      setSyncStatus('error', 'Sync failed (' + (e.name === 'AbortError' ? 'timeout' : 'network') + '). Saved locally.');
     }
   }
 
   async function pullFromRemote() {
     if (!remoteSyncEnabled) return;
     try {
-      const res = await fetch(REMOTE_URL + '?_=' + Date.now(), {
+      const res = await fetchWithTimeout(REMOTE_URL + '?_=' + Date.now(), {
         method: 'GET',
         cache: 'no-store',
-      });
+      }, 8000);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       // textdb.dev returns 'value=<url-encoded JSON>'
       let json = text;
       if (json.startsWith('value=')) json = decodeURIComponent(json.slice(6));
-      if (!json || json.trim() === '') { setSyncStatus('ok', 'Cloud is empty'); return false; }
+      if (!json || json.trim() === '') { setSyncStatus('ok', 'Cloud is empty — will seed'); return false; }
       let remote;
-      try { remote = JSON.parse(json); } catch (e) { setSyncStatus('error', 'Cloud data invalid'); return false; }
-      if (!remote || remote.version !== DATA_VERSION) return;
+      try { remote = JSON.parse(json); } catch (e) { setSyncStatus('ok', 'Cloud data outdated, will overwrite'); return false; }
+      if (!remote || remote.version !== DATA_VERSION) { setSyncStatus('ok', 'Cloud version mismatch, will overwrite'); return false; }
       const remoteTs = remote.timestamp || 0;
       if (remoteTs > lastSyncedTimestamp && Array.isArray(remote.cards)) {
         // Apply remote state
@@ -1381,9 +1388,9 @@
 
   // ── Cloud sync: pull on startup, then poll periodically ──
   setSyncStatus('syncing', 'Connecting to cloud…');
-  pullFromRemote().then(() => {
-    // If remote was empty/older, push our local state to seed it
-    if (lastSyncedTimestamp === 0) {
+  pullFromRemote().then((gotUpdate) => {
+    // If remote was empty/older/invalid, push our local state to seed it
+    if (lastSyncedTimestamp === 0 || !gotUpdate) {
       saveState();
     }
   });
@@ -1394,4 +1401,14 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !editMode) pullFromRemote();
   });
+  // Click indicator to manually retry sync
+  const syncEl = document.getElementById('syncStatus');
+  if (syncEl) {
+    syncEl.style.cursor = 'pointer';
+    syncEl.title += ' (click to retry)';
+    syncEl.addEventListener('click', () => {
+      setSyncStatus('syncing', 'Manual retry…');
+      pullFromRemote().then(() => { if (!editMode) saveState(); });
+    });
+  }
 })();
