@@ -391,6 +391,11 @@
         cards: CARDS,
         connections: CONNECTIONS,
       });
+      // Keep a rolling backup before overwriting
+      try {
+        const prev = localStorage.getItem(STORAGE_KEY);
+        if (prev && prev !== data) localStorage.setItem(STORAGE_KEY + '_backup', prev);
+      } catch (e) {}
       localStorage.setItem(STORAGE_KEY, data);
       console.log('Saved:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
       // Push to cloud (fire-and-forget)
@@ -451,9 +456,22 @@
       if (!json || json.trim() === '') { setSyncStatus('ok', 'Cloud is empty — will seed'); return false; }
       let remote;
       try { remote = JSON.parse(json); } catch (e) { setSyncStatus('ok', 'Cloud data outdated, will overwrite'); return false; }
-      if (!remote || remote.version !== DATA_VERSION) { setSyncStatus('ok', 'Cloud version mismatch, will overwrite'); return false; }
+      if (!remote || remote.version !== DATA_VERSION) { setSyncStatus('ok', 'Cloud version mismatch — not applied'); return false; }
       const remoteTs = remote.timestamp || 0;
+      // SAFETY: refuse pulls that would delete a lot of local data
+      const localCount = (CARDS || []).length;
+      const remoteCount = (remote.cards || []).length;
+      if (localCount > 0 && remoteCount < Math.max(3, localCount - 2)) {
+        setSyncStatus('error', 'Cloud has only ' + remoteCount + ' cards (local has ' + localCount + ') — refused for safety. Click ☁️ to push your version.');
+        console.warn('Pull refused: would delete data', { localCount, remoteCount });
+        return false;
+      }
       if (remoteTs > lastSyncedTimestamp && Array.isArray(remote.cards)) {
+        // Backup current state before applying remote
+        try {
+          const prev = localStorage.getItem(STORAGE_KEY);
+          if (prev) localStorage.setItem(STORAGE_KEY + '_backup', prev);
+        } catch (e) {}
         // Apply remote state
         CARDS = remote.cards;
         CONNECTIONS = remote.connections || [];
@@ -798,6 +816,7 @@
   const dropOverlay = document.getElementById('dropOverlay');
   const exportBtn   = document.getElementById('exportData');
   const resetBtn    = document.getElementById('resetData');
+  const restoreBtn  = document.getElementById('restoreBackup');
   const ctxMenu     = document.getElementById('ctxMenu');
   const modalOverlay = document.getElementById('modalOverlay');
   const cardForm    = document.getElementById('cardForm');
@@ -811,7 +830,7 @@
     editMode = !editMode;
     document.body.classList.toggle('editing-mode', editMode);
     editToggle.textContent = editMode ? '🔒 Lock' : '✏️ Edit';
-    [addCardBtn, addConnBtn, addImageBtn, exportBtn, resetBtn].forEach(b => b.style.display = editMode ? '' : 'none');
+    [addCardBtn, addConnBtn, addImageBtn, exportBtn, resetBtn, restoreBtn].forEach(b => b.style.display = editMode ? '' : 'none');
     hideCtx();
     renderCards();
     if (!editMode) saveState();
@@ -1380,35 +1399,48 @@
     location.reload();
   });
 
+  // Restore from local backup (undo last sync overwrite)
+  restoreBtn.addEventListener('click', () => {
+    const backup = localStorage.getItem(STORAGE_KEY + '_backup');
+    if (!backup) { alert('No local backup found.'); return; }
+    let data;
+    try { data = JSON.parse(backup); } catch (e) { alert('Backup is corrupt.'); return; }
+    const cnt = (data.cards || []).length;
+    const ts = data.timestamp ? new Date(data.timestamp).toLocaleString() : 'unknown time';
+    if (!confirm('Restore previous local backup with ' + cnt + ' cards (saved ' + ts + ')?\n\nThis will REPLACE current data and push to cloud.')) return;
+    CARDS = data.cards || [];
+    CONNECTIONS = data.connections || [];
+    saveState();
+    renderCards();
+    alert('Restored ' + cnt + ' cards from backup.');
+  });
+
   // ════════════════════════════════════════
   //  INIT
   // ════════════════════════════════════════
   renderCards();
   resetView();
 
-  // ── Cloud sync: pull on startup, then poll periodically ──
-  setSyncStatus('syncing', 'Connecting to cloud…');
-  pullFromRemote().then((gotUpdate) => {
-    // If remote was empty/older/invalid, push our local state to seed it
-    if (lastSyncedTimestamp === 0 || !gotUpdate) {
-      saveState();
-    }
-  });
+  // ── Cloud sync: SAFE MODE — do NOT auto-pull on load (prevents bad data wiping local) ──
+  // Auto-pull only happens when explicitly clicking the ☁️ indicator,
+  // or after the user has actively saved (edit-mode exit). Periodic pull stays
+  // active but the safety check inside pullFromRemote() will refuse destructive pulls.
+  setSyncStatus('ok', 'Local mode. Click ☁️ to sync with cloud.');
   setInterval(() => {
     if (!editMode) pullFromRemote();
   }, SYNC_POLL_MS);
-  // Also pull when tab becomes visible again
+  // Pull when tab becomes visible again (still gated by safety check)
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !editMode) pullFromRemote();
   });
-  // Click indicator to manually retry sync
+  // Click indicator: PUSH local to cloud (recover from accidental cloud overwrite)
   const syncEl = document.getElementById('syncStatus');
   if (syncEl) {
     syncEl.style.cursor = 'pointer';
-    syncEl.title += ' (click to retry)';
+    syncEl.title = 'Click to PUSH your local data to the cloud (overwrites cloud)';
     syncEl.addEventListener('click', () => {
-      setSyncStatus('syncing', 'Manual retry…');
-      pullFromRemote().then(() => { if (!editMode) saveState(); });
+      if (!confirm('Push your LOCAL data to the cloud, overwriting whatever is there?\n\nUse this if other devices accidentally wiped the cloud.')) return;
+      saveState();
     });
   }
 })();
