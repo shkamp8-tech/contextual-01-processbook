@@ -458,12 +458,21 @@
       try { remote = JSON.parse(json); } catch (e) { setSyncStatus('ok', 'Cloud data outdated, will overwrite'); return false; }
       if (!remote || remote.version !== DATA_VERSION) { setSyncStatus('ok', 'Cloud version mismatch — not applied'); return false; }
       const remoteTs = remote.timestamp || 0;
-      // SAFETY: refuse pulls that would delete a lot of local data
+      // SAFETY: if cloud has significantly less data than local, local wins → auto-push
       const localCount = (CARDS || []).length;
       const remoteCount = (remote.cards || []).length;
       if (localCount > 0 && remoteCount < Math.max(3, localCount - 2)) {
-        setSyncStatus('error', 'Cloud has only ' + remoteCount + ' cards (local has ' + localCount + ') — refused for safety. Click ☁️ to push your version.');
-        console.warn('Pull refused: would delete data', { localCount, remoteCount });
+        setSyncStatus('syncing', 'Cloud has only ' + remoteCount + ' cards (local has ' + localCount + ') — auto-pushing local…');
+        console.warn('Pull refused, auto-pushing local instead', { localCount, remoteCount });
+        // Push local up so cloud catches up
+        try {
+          await pushToRemote(JSON.stringify({
+            version: DATA_VERSION,
+            timestamp: Date.now(),
+            cards: CARDS,
+            connections: CONNECTIONS,
+          }));
+        } catch (e) {}
         return false;
       }
       if (remoteTs > lastSyncedTimestamp && Array.isArray(remote.cards)) {
@@ -1437,9 +1446,9 @@
   const syncEl = document.getElementById('syncStatus');
   if (syncEl) {
     syncEl.style.cursor = 'pointer';
-    syncEl.title = 'Click to PUSH your local data to the cloud (overwrites cloud)';
+    syncEl.title = 'Click to push your local data to the cloud now';
     syncEl.addEventListener('click', () => {
-      if (!confirm('Push your LOCAL data to the cloud, overwriting whatever is there?\n\nUse this if other devices accidentally wiped the cloud.')) return;
+      setSyncStatus('syncing', 'Pushing local to cloud…');
       saveState();
     });
   }
