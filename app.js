@@ -426,16 +426,36 @@
     }
   }
 
+  const SYNC_LOG_KEY = 'processbook_sync_log';
+  function logSync(level, msg) {
+    try {
+      const log = JSON.parse(localStorage.getItem(SYNC_LOG_KEY) || '[]');
+      log.push({ t: new Date().toISOString(), level, msg });
+      // keep last 50 entries
+      while (log.length > 50) log.shift();
+      localStorage.setItem(SYNC_LOG_KEY, JSON.stringify(log));
+    } catch (e) {}
+  }
+  let lastErrorMsg = null;
   function setSyncStatus(state, title) {
     const el = document.getElementById('syncStatus');
     if (!el) return;
+    // Remember last error so subsequent 'syncing' messages don't bury it
+    if (state === 'error') { lastErrorMsg = title; logSync('error', title || ''); }
+    if (state === 'ok') { lastErrorMsg = null; }
     el.classList.remove('syncing', 'error', 'ok');
     if (state) el.classList.add(state);
     if (state === 'syncing') el.textContent = '⟳';
     else if (state === 'error') el.textContent = '⚠️';
     else if (state === 'ok') el.textContent = '☁️';
     else el.textContent = '☁️';
-    if (title) el.title = title;
+    // If we have an unresolved error, append it so user can always see it on hover
+    const tooltip = lastErrorMsg && state !== 'error'
+      ? (title || '') + '\n\nLast error: ' + lastErrorMsg
+      : (title || '');
+    if (tooltip) el.title = tooltip;
+    if (state === 'error') logSync('error', title || '');
+    else if (state === 'ok') logSync('ok', title || '');
   }
 
   function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
@@ -1484,8 +1504,19 @@
   const syncEl = document.getElementById('syncStatus');
   if (syncEl) {
     syncEl.style.cursor = 'pointer';
-    syncEl.title = 'Click to push your local data to the cloud now';
-    syncEl.addEventListener('click', () => {
+    syncEl.title = 'Click to push local to cloud · Shift+click to view sync log';
+    syncEl.addEventListener('click', (e) => {
+      if (e.shiftKey) {
+        // Show recent sync log so user can read past errors
+        let log = [];
+        try { log = JSON.parse(localStorage.getItem(SYNC_LOG_KEY) || '[]'); } catch (err) {}
+        const lines = log.slice(-15).map(en => {
+          const t = new Date(en.t).toLocaleTimeString();
+          return '[' + t + '] ' + en.level.toUpperCase() + ': ' + en.msg;
+        }).join('\n');
+        prompt('Recent sync log (last 15 entries) — copy if needed:', lines || '(empty)');
+        return;
+      }
       setSyncStatus('syncing', 'Pushing local to cloud…');
       saveState();
     });
