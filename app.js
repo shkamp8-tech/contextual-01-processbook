@@ -445,20 +445,25 @@
       .finally(() => clearTimeout(timer));
   }
 
-  async function pushToRemote(jsonString) {
+  async function pushToRemote(jsonString, attempt = 1) {
     if (!remoteSyncEnabled) return;
-    setSyncStatus('syncing', 'Uploading changes…');
+    setSyncStatus('syncing', attempt > 1 ? 'Retrying upload… (' + attempt + ')' : 'Uploading changes…');
     try {
       const res = await fetchWithTimeout(REMOTE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'value=' + encodeURIComponent(jsonString),
-      }, 10000);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString());
+      }, 20000);
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+      setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString() + ' (' + Math.round(jsonString.length/1024) + 'KB)');
     } catch (e) {
-      console.warn('Cloud sync push failed:', e);
-      setSyncStatus('error', 'Sync failed (' + (e.name === 'AbortError' ? 'timeout' : 'network') + '). Saved locally.');
+      console.warn('Cloud sync push failed (attempt ' + attempt + '):', e);
+      if (attempt < 3) {
+        await new Promise(r => setTimeout(r, 1500 * attempt));
+        return pushToRemote(jsonString, attempt + 1);
+      }
+      const why = e.name === 'AbortError' ? 'timeout (' + Math.round(jsonString.length/1024) + 'KB — too big?)' : (e.message || 'network');
+      setSyncStatus('error', 'Sync failed: ' + why + '. Saved locally. Click ☁️ to retry.');
     }
   }
 
@@ -474,9 +479,21 @@
       // textdb.dev returns 'value=<url-encoded JSON>'
       let json = text;
       if (json.startsWith('value=')) json = decodeURIComponent(json.slice(6));
-      if (!json || json.trim() === '') { setSyncStatus('ok', 'Cloud is empty — will seed'); return false; }
+      if (!json || json.trim() === '') {
+        setSyncStatus('syncing', 'Cloud empty — seeding from local…');
+        if ((CARDS||[]).length > 0) {
+          await pushToRemote(JSON.stringify({ version: DATA_VERSION, timestamp: Date.now(), cards: CARDS, connections: CONNECTIONS }));
+        }
+        return false;
+      }
       let remote;
-      try { remote = JSON.parse(json); } catch (e) { setSyncStatus('ok', 'Cloud data outdated, will overwrite'); return false; }
+      try { remote = JSON.parse(json); } catch (e) {
+        setSyncStatus('syncing', 'Cloud data corrupt — overwriting from local…');
+        if ((CARDS||[]).length > 0) {
+          await pushToRemote(JSON.stringify({ version: DATA_VERSION, timestamp: Date.now(), cards: CARDS, connections: CONNECTIONS }));
+        }
+        return false;
+      }
       if (!remote || remote.version !== DATA_VERSION) { setSyncStatus('ok', 'Cloud version mismatch — not applied'); return false; }
       const remoteTs = remote.timestamp || 0;
       // SAFETY: if cloud has significantly less data than local, local wins → auto-push
