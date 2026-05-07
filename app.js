@@ -1504,17 +1504,39 @@
   const syncEl = document.getElementById('syncStatus');
   if (syncEl) {
     syncEl.style.cursor = 'pointer';
-    syncEl.title = 'Click to push local to cloud · Shift+click to view sync log';
-    syncEl.addEventListener('click', (e) => {
+    syncEl.title = 'Click to push local to cloud · Shift+click for diagnostics';
+    syncEl.addEventListener('click', async (e) => {
       if (e.shiftKey) {
-        // Show recent sync log so user can read past errors
+        // Run network diagnostics + show recent log
+        const results = [];
+        const test = async (label, url, opts = {}) => {
+          const t0 = performance.now();
+          try {
+            const r = await fetchWithTimeout(url, opts, 6000);
+            const ms = Math.round(performance.now() - t0);
+            results.push(label + ': OK (HTTP ' + r.status + ', ' + ms + 'ms)');
+          } catch (err) {
+            const ms = Math.round(performance.now() - t0);
+            results.push(label + ': FAIL (' + (err.name || 'Error') + ': ' + (err.message || 'unknown') + ', ' + ms + 'ms)');
+          }
+        };
+        results.push('=== NETWORK DIAGNOSTICS ===');
+        results.push('Origin: ' + location.origin);
+        results.push('Backend URL: ' + REMOTE_URL);
+        results.push('');
+        await test('1. Internet (google no-cors)', 'https://www.google.com/generate_204', { mode: 'no-cors' });
+        await test('2. Backend reachable (no-cors)', REMOTE_URL, { mode: 'no-cors' });
+        await test('3. Backend GET (cors)', REMOTE_URL + '?_=' + Date.now(), { cache: 'no-store' });
+        await test('4. Backend POST (cors, small)', REMOTE_URL, { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: 'value=ping' });
+        results.push('');
+        results.push('=== RECENT SYNC LOG ===');
         let log = [];
         try { log = JSON.parse(localStorage.getItem(SYNC_LOG_KEY) || '[]'); } catch (err) {}
-        const lines = log.slice(-15).map(en => {
-          const t = new Date(en.t).toLocaleTimeString();
-          return '[' + t + '] ' + en.level.toUpperCase() + ': ' + en.msg;
-        }).join('\n');
-        prompt('Recent sync log (last 15 entries) — copy if needed:', lines || '(empty)');
+        log.slice(-15).forEach(en => {
+          const tt = new Date(en.t).toLocaleTimeString();
+          results.push('[' + tt + '] ' + en.level.toUpperCase() + ': ' + en.msg);
+        });
+        prompt('Diagnostics — copy and send:', results.join('\n'));
         return;
       }
       setSyncStatus('syncing', 'Pushing local to cloud…');
