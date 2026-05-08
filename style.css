@@ -69,6 +69,31 @@
 }
 .welcome__btn:hover { opacity: 0.9; }
 .welcome__btn:active { transform: scale(0.98); }
+.welcome__pinhint {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 4px;
+}
+.welcome__minicard {
+  position: relative;
+  width: 140px;
+  height: 70px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.welcome__minipin {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(127,127,127,0.12);
+  padding: 2px 7px;
+  border-radius: 6px;
+}
 .lock {
   background: var(--bg-card);
   border: 1px solid var(--border);

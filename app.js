@@ -338,7 +338,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 15; // bump to force reset to new defaults
+  const DATA_VERSION = 14; // do not bump unless intentionally wiping user data
   // ── Cloud sync (textdb.dev — anonymous, no API key, CORS-enabled) ──
   const SYNC_KEY = 'contextual-01-shkamp8-processbook';
   const REMOTE_URL = 'https://textdb.dev/api/data/' + SYNC_KEY;
