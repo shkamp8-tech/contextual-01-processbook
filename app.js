@@ -311,6 +311,17 @@
       x: 400,
       y: 1200,
     },
+    {
+      id: 'research-questions',
+      title: 'Research Questions',
+      phase: 'Research',
+      desc: '',
+      link: '',
+      date: '',
+      pin: '',
+      x: 700,
+      y: 1400,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -356,6 +367,16 @@
           CARDS = state.cards || [];
           CONNECTIONS = state.connections || [];
           lastSyncedTimestamp = state.timestamp || 0;
+          // Merge in any NEW default cards that don't exist locally yet (non-destructive)
+          const localIds = new Set(CARDS.map(c => c.id));
+          let added = 0;
+          for (const dc of DEFAULT_CARDS) {
+            if (!localIds.has(dc.id)) {
+              CARDS.push(JSON.parse(JSON.stringify(dc)));
+              added++;
+            }
+          }
+          if (added) { console.log('Added', added, 'new default cards'); saveState(); }
           console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }

@@ -35,10 +35,10 @@
 }
 .welcome__panel {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 3px solid #ff9f0a;
   border-radius: 20px;
   padding: 32px 36px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 0 0 1px rgba(255,159,10,0.25), 0 12px 40px rgba(0,0,0,0.25);
   max-width: 460px;
   width: 100%;
   text-align: center;
