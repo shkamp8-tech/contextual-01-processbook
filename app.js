@@ -69,9 +69,9 @@
       id: 'fascination',
       title: 'Fascination Research',
       phase: 'Research',
-      desc: '',
+      desc: 'I didn’t know where to begin, so I used my previous project as a starting point to build on.',
       link: 'https://shkamp8-tech.github.io/fascination-project-research/',
-      date: '2026-04-08',
+      date: '2026-02-20',
       pin: '0001',
       x: 0,
       y: 0,
@@ -106,7 +106,7 @@
       phase: 'Research',
       desc: 'Based on the fascination research, I created a wordweb to explore connections and themes.',
       link: 'https://shkamp8-tech.github.io/wordweb/',
-      date: '2026-04-08',
+      date: '2026-02-27',
       pin: '0002',
       x: -300,
       y: 260,
@@ -152,7 +152,7 @@
       phase: 'Research',
       desc: '',
       link: '',
-      date: '2026-04-08',
+      date: '2026-03-13',
       pin: '',
       x: 20,
       y: 840,
@@ -202,7 +202,7 @@
       phase: 'Research',
       desc: '',
       link: '',
-      date: '2026-04-13',
+      date: '2026-03-06',
       pin: '',
       x: 140,
       y: 600,
@@ -338,7 +338,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 14; // bump to force reset to new defaults
+  const DATA_VERSION = 15; // bump to force reset to new defaults
   // ── Cloud sync (textdb.dev — anonymous, no API key, CORS-enabled) ──
   const SYNC_KEY = 'contextual-01-shkamp8-processbook';
   const REMOTE_URL = 'https://textdb.dev/api/data/' + SYNC_KEY;
