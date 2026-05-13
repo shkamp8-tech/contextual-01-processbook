@@ -323,35 +323,68 @@
       y: 1400,
     },
     {
-      id: 'process-analysis',
-      title: 'Process — Direction Analysis',
+      id: 'process',
+      title: 'Process',
+      subtitle: 'From tension to harmony — what happens in the space between opposites, and what gets lost when we try to name it.',
+      process: true,
       phase: 'Analysis',
-      desc: 'Synthesis of the wordweb, fascination research, Mingus interview, and TED talk by Eric Berlow — distilled into a clear direction for the zine.',
-      bullets: [
-        '◆ Core: the tension between opposites (order ↔ chaos, control ↔ unpredictability, Apollonian ↔ Dionysian) and what happens IN BETWEEN.',
-        '◆ Underlying axis (intent, not stated outright in the zine): Apollonian ↔ Dionysian as the umbrella for all sub-polarities on the wordweb.',
-        '◆ Focus zone: the TIPPING POINT — the moment one side flips into the other — and the SPECTRUM that lives between the poles. WHEN does it tip? HOW? WHAT lives in the gradient?',
-        '◆ Translation = loss: every act of simplifying, categorising, or translating something silently discards information that may have mattered. (The Porphyrius Tree, Library of Babel & Spectre Tile all echo this — pattern vs. residue.)',
-        '◆ Nothing is ever fully in control or perfect; everything can break or deform. But we can strive toward the best possible — that striving IS the design act.',
-        '◆ From tension to harmony — Mingus shows that two functions can coexist as joy, not friction. Balance itself IS the harmony.',
-        '◆ The 21-mirror installation = vehicle, not subject. The zine speaks about the broader principle; the project is the entry point.',
-        '',
-        '— Research directions for the zine —',
-        '1. Map concrete examples of TIPPING POINTS in design / nature / perception (phase transitions, gestalt flips, critical mass).',
-        '2. Collect "lost-in-translation" cases — what disappears when complexity is flattened? (data viz, language, simplification, generalisation).',
-        '3. Investigate emergent harmony: when do two opposing forces stop fighting and start producing something new together? (Mingus double-function, Spectre Tile aperiodicity, biological symbiosis).',
-        '4. Probe the ETHICS of categorising — Porphyrius Tree, taxonomy, "exceptions" on the wordweb. Who decides what counts as the rule and what as the deviation?',
-        '5. Define the SPECTRUM as a tool: not a line between two ends, but a field where every point has its own validity.',
-        '',
-        '— Zine angle —',
-        'Audience: peers + tutors first, general public secondary. Stance: a clear position delivered THROUGH open questions in the reader\'s mind, without literally asking them. Tone: striving, never resolved — harmony as a direction, not a destination.',
-      ],
-      link: '',
       date: '2026-05-13',
-      pin: '',
-      x: 1100,
+      x: 1000,
       y: 1700,
-      info: true,
+      sections: [
+        {
+          heading: 'The core',
+          text: 'A study of how opposites — order/chaos, control/unpredictability, Apollonian/Dionysian — do not stand apart but live on a spectrum, and how the most interesting things happen at the tipping point where one becomes the other. The aim is not to choose a side, but to make the in-between visible.'
+        },
+        {
+          heading: 'The hidden axis',
+          text: 'Apollonian ↔ Dionysian functions as the underlying axis of the project. It will not be named explicitly in the final outcome, but it shapes every choice: what is structured vs. what is felt, what is measured vs. what is sensed, what is intentional vs. what is given.'
+        },
+        {
+          heading: 'Tipping point & spectrum',
+          bullets: [
+            'When does something tip from order into chaos, or from control into surrender?',
+            'Is the tipping point a threshold (a line) or a zone (a gradient)?',
+            'What does the spectrum between two poles actually contain — and can it be experienced, not just described?',
+            'Can a designer design the tipping point itself, or only the conditions for it to occur?'
+          ]
+        },
+        {
+          heading: 'Lost information',
+          text: 'Every translation, simplification, or categorisation throws something away — consciously or not. To name a thing is to leave another thing unnamed. The zine should make the reader feel this loss, not just understand it.'
+        },
+        {
+          heading: 'Control & the gift',
+          text: 'Nothing is ever fully under control or perfect — anything can break, deform, be interrupted. We can only strive toward the best possible outcome and stay open to what arrives uninvited. Mingus calls these moments “presents”: the bird of prey on the lightning-pole, people walking through the holes in the ship. The unplanned is part of the work.'
+        },
+        {
+          heading: 'From tension to harmony',
+          text: 'Two opposites meeting do not have to fight. Mingus’ double-function objects show that polarity can resolve into joy without losing either side. Balance is not the absence of opposites — balance is the harmony between them.'
+        },
+        {
+          heading: 'Method',
+          bullets: [
+            'Start from the 21-mirror installation as a vehicle, not a subject.',
+            'Use the wordweb as the structural map — Dionysian / Apollonian as silent axis.',
+            'Treat the interview “presents” as evidence, not anecdote.',
+            'Let categorisation itself become a topic — show what falls outside.'
+          ]
+        },
+        {
+          heading: 'The zine',
+          text: 'A small folder/booklet for fellow students and tutors at Design Academy (general public welcome but secondary). The tone takes a clear stance through open-feeling phrasing — no questions on the page, but every spread should leave the reader with one in their head.'
+        },
+        {
+          heading: 'Directions to keep researching',
+          bullets: [
+            'Find tipping points in design, nature, music, language — collect concrete examples.',
+            'Map what each act of categorisation excludes (margins, exceptions, noise).',
+            'Test the difference between a threshold and a gradient as a visual/spatial language.',
+            'Look at Nietzsche’s Apollonian/Dionysian, but stay close to your own visual vocabulary.',
+            'Develop one or two visual motifs that carry the spectrum across the zine spreads.'
+          ]
+        }
+      ]
     },
   ];
 
@@ -789,6 +822,33 @@
         <div class="card card--preview" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
           <img class="card__image" src="${sanitize(card.image)}" alt="${sanitize(card.title)}" draggable="false" />
           ${card.title ? `<span class="card__image-label">${sanitize(card.title)}</span>` : ''}
+          ${handles}
+        </div>`;
+        return;
+      }
+
+      // Process / synthesis card (zine backbone)
+      if (card.process) {
+        const sections = (card.sections || []).map(s => {
+          let body = '';
+          if (s.bullets && s.bullets.length) {
+            body = `<ul class="card__bullets">${s.bullets.map(b => `<li>${sanitize(b)}</li>`).join('')}</ul>`;
+          } else if (s.text) {
+            body = `<p class="card__desc">${sanitize(s.text)}</p>`;
+          }
+          return `<div class="process__section">
+            ${s.heading ? `<h4 class="process__heading">${sanitize(s.heading)}</h4>` : ''}
+            ${body}
+          </div>`;
+        }).join('');
+        cardsHtml += `
+        <div class="card card--process" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
+          <div class="process__ribbon">PROCESS · synthesis</div>
+          <div class="card__body">
+            ${card.title ? `<h3 class="process__title">${sanitize(card.title)}</h3>` : ''}
+            ${card.subtitle ? `<p class="process__subtitle">${sanitize(card.subtitle)}</p>` : ''}
+            ${sections}
+          </div>
           ${handles}
         </div>`;
         return;
