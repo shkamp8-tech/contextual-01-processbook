@@ -414,12 +414,45 @@
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
   const DATA_VERSION = 14; // do not bump unless intentionally wiping user data
-  // ── Cloud sync (textdb.dev — anonymous, no API key, CORS-enabled) ──
-  const SYNC_KEY = 'contextual-01-shkamp8-processbook';
-  const REMOTE_URL = 'https://textdb.dev/api/data/' + SYNC_KEY;
+  // ── Cloud sync (GitHub Gist — reliable, requires personal access token with `gist` scope) ──
+  // Token is stored per-device in localStorage. Never committed to repo.
+  // First device creates the gist, gist ID is stored locally + in the gist content itself.
+  const GIST_TOKEN_KEY = 'processbook_gist_token';
+  const GIST_ID_KEY = 'processbook_gist_id';
+  const GIST_FILENAME = 'contextual-01-processbook.json';
+  const GIST_API = 'https://api.github.com/gists';
   const SYNC_POLL_MS = 10000;
   let lastSyncedTimestamp = 0; // last timestamp we know about (local or remote)
   let remoteSyncEnabled = true;
+  function getGistToken() { try { return localStorage.getItem(GIST_TOKEN_KEY) || ''; } catch (e) { return ''; } }
+  function getGistId() { try { return localStorage.getItem(GIST_ID_KEY) || ''; } catch (e) { return ''; } }
+  function setGistToken(t) { try { localStorage.setItem(GIST_TOKEN_KEY, t); } catch (e) {} }
+  function setGistId(id) { try { localStorage.setItem(GIST_ID_KEY, id); } catch (e) {} }
+  function gistAuthHeaders() {
+    const t = getGistToken();
+    return t ? { 'Authorization': 'token ' + t, 'Accept': 'application/vnd.github+json' } : { 'Accept': 'application/vnd.github+json' };
+  }
+  async function promptForGistToken() {
+    const t = window.prompt(
+      'GitHub sync setup\n\n' +
+      'Paste your GitHub personal access token (with `gist` scope).\n' +
+      'Get one at: https://github.com/settings/tokens/new\n' +
+      '(Tick only the "gist" checkbox, then Generate.)\n\n' +
+      'On other devices, paste the SAME token to share the same data.',
+      ''
+    );
+    if (t && t.trim()) { setGistToken(t.trim()); return t.trim(); }
+    return '';
+  }
+  async function promptForGistId() {
+    const id = window.prompt(
+      'Paste the Gist ID from your other device (long hex string in the gist URL after gist.github.com/<user>/).\n' +
+      'Leave empty to CREATE a new gist on this device.',
+      ''
+    );
+    if (id && id.trim()) { setGistId(id.trim()); return id.trim(); }
+    return '';
+  }
   let CARDS, CONNECTIONS;
 
   function loadState() {
@@ -533,24 +566,62 @@
 
   async function pushToRemote(jsonString, attempt = 1) {
     if (!remoteSyncEnabled) return;
+    const token = getGistToken();
+    if (!token) {
+      const el = document.getElementById('syncStatus');
+      if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '🔑'; el.title = 'Click to set up cloud sync (GitHub token).'; }
+      return;
+    }
     if (consecutiveFailures >= MAX_FAILURES) {
-      // Stay quiet — work locally without nagging. User can click ☁️ to retry.
       const el = document.getElementById('syncStatus');
       if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '💾'; el.title = 'Working in local-only mode (cloud unreachable). Click to retry.'; }
       return;
     }
     setSyncStatus('syncing', attempt > 1 ? 'Retrying upload… (' + attempt + ')' : 'Uploading changes…');
     try {
-      const res = await fetchWithTimeout(REMOTE_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'value=' + encodeURIComponent(jsonString),
+      const body = JSON.stringify({
+        description: 'Contextual 01 process book sync',
+        files: { [GIST_FILENAME]: { content: jsonString } },
+      });
+      let url, method;
+      let gistId = getGistId();
+      if (gistId) {
+        url = GIST_API + '/' + gistId;
+        method = 'PATCH';
+      } else {
+        // First push: create a new gist (private/secret by default for new gists with `gist` scope is `public:false`)
+        url = GIST_API;
+        method = 'POST';
+      }
+      const res = await fetchWithTimeout(url, {
+        method,
+        headers: { ...gistAuthHeaders(), 'Content-Type': 'application/json' },
+        body: method === 'POST' ? JSON.stringify({
+          description: 'Contextual 01 process book sync',
+          public: false,
+          files: { [GIST_FILENAME]: { content: jsonString } },
+        }) : body,
       }, 20000);
-      if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error('HTTP ' + res.status + ' ' + res.statusText + (errText ? ' — ' + errText.slice(0, 200) : ''));
+      }
+      const data = await res.json();
+      if (data && data.id && !getGistId()) {
+        setGistId(data.id);
+        console.log('Created new gist:', data.id);
+      }
       consecutiveFailures = 0;
       setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString() + ' (' + Math.round(jsonString.length/1024) + 'KB)');
     } catch (e) {
       console.warn('Cloud sync push failed (attempt ' + attempt + '):', e);
+      // 401 = bad token; don't retry, ask user to re-enter
+      if (/HTTP 401/.test(e.message || '')) {
+        setSyncStatus('error', 'GitHub token rejected. Click 🔑 to enter a new one.');
+        const el = document.getElementById('syncStatus');
+        if (el) el.textContent = '🔑';
+        return;
+      }
       if (attempt < 3) {
         await new Promise(r => setTimeout(r, 1500 * attempt));
         return pushToRemote(jsonString, attempt + 1);
@@ -569,17 +640,20 @@
 
   async function pullFromRemote() {
     if (!remoteSyncEnabled) return;
+    const token = getGistToken();
+    if (!token) return false;
+    const gistId = getGistId();
+    if (!gistId) return false; // Nothing to pull yet — first push will create gist
     try {
-      const res = await fetchWithTimeout(REMOTE_URL + '?_=' + Date.now(), {
+      const res = await fetchWithTimeout(GIST_API + '/' + gistId + '?_=' + Date.now(), {
         method: 'GET',
         cache: 'no-store',
+        headers: gistAuthHeaders(),
       }, 8000);
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      // textdb.dev returns 'value=<url-encoded JSON>'
-      let json = text;
-      if (json.startsWith('value=')) json = decodeURIComponent(json.slice(6));
-      if (!json || json.trim() === '') {
+      const gistData = await res.json();
+      const file = gistData && gistData.files && gistData.files[GIST_FILENAME];
+      if (!file || !file.content) {
         setSyncStatus('syncing', 'Cloud empty — seeding from local…');
         if ((CARDS||[]).length > 0) {
           await pushToRemote(JSON.stringify({ version: DATA_VERSION, timestamp: Date.now(), cards: CARDS, connections: CONNECTIONS }));
@@ -587,7 +661,7 @@
         return false;
       }
       let remote;
-      try { remote = JSON.parse(json); } catch (e) {
+      try { remote = JSON.parse(file.content); } catch (e) {
         setSyncStatus('syncing', 'Cloud data corrupt — overwriting from local…');
         if ((CARDS||[]).length > 0) {
           await pushToRemote(JSON.stringify({ version: DATA_VERSION, timestamp: Date.now(), cards: CARDS, connections: CONNECTIONS }));
@@ -602,7 +676,6 @@
       if (localCount > 0 && remoteCount < Math.max(3, localCount - 2)) {
         setSyncStatus('syncing', 'Cloud has only ' + remoteCount + ' cards (local has ' + localCount + ') — auto-pushing local…');
         console.warn('Pull refused, auto-pushing local instead', { localCount, remoteCount });
-        // Push local up so cloud catches up
         try {
           await pushToRemote(JSON.stringify({
             version: DATA_VERSION,
@@ -614,16 +687,13 @@
         return false;
       }
       if (remoteTs > lastSyncedTimestamp && Array.isArray(remote.cards)) {
-        // Backup current state before applying remote
         try {
           const prev = localStorage.getItem(STORAGE_KEY);
           if (prev) localStorage.setItem(STORAGE_KEY + '_backup', prev);
         } catch (e) {}
-        // Apply remote state
         CARDS = remote.cards;
         CONNECTIONS = remote.connections || [];
         lastSyncedTimestamp = remoteTs;
-        // Mirror to localStorage so reload is fast
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify({
             version: DATA_VERSION,
@@ -640,7 +710,11 @@
       setSyncStatus('ok', 'Up to date · ' + new Date().toLocaleTimeString());
     } catch (e) {
       console.warn('Cloud sync pull failed:', e);
-      setSyncStatus('error', 'Cloud unreachable. Working offline.');
+      if (/HTTP 401/.test(e.message || '')) {
+        setSyncStatus('error', 'GitHub token rejected. Click 🔑 to enter a new one.');
+      } else {
+        setSyncStatus('error', 'Cloud unreachable. Working offline.');
+      }
     }
     return false;
   }
@@ -1600,6 +1674,11 @@
   // or after the user has actively saved (edit-mode exit). Periodic pull stays
   // active but the safety check inside pullFromRemote() will refuse destructive pulls.
   setSyncStatus('ok', 'Local mode. Click ☁️ to sync with cloud.');
+  // Show 🔑 if no token yet
+  if (!getGistToken()) {
+    const el = document.getElementById('syncStatus');
+    if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '🔑'; el.title = 'Click to set up GitHub sync (one-time, paste token).'; }
+  }
   setInterval(() => {
     if (!editMode) pullFromRemote();
   }, SYNC_POLL_MS);
@@ -1611,8 +1690,38 @@
   const syncEl = document.getElementById('syncStatus');
   if (syncEl) {
     syncEl.style.cursor = 'pointer';
-    syncEl.title = 'Click to push local to cloud · Shift+click for diagnostics';
+    syncEl.title = 'Click to push local to cloud · Shift+click for diagnostics · Alt+click to manage token/gist';
     syncEl.addEventListener('click', async (e) => {
+      // Alt+click → manage token / gist id (re-enter token, link to existing gist, etc.)
+      if (e.altKey) {
+        const choice = window.prompt(
+          'GitHub Sync — manage settings\n\n' +
+          'Type:\n' +
+          '  T = enter/replace token\n' +
+          '  G = enter Gist ID (link to existing gist from another device)\n' +
+          '  S = show current Gist ID (to copy to other device)\n' +
+          '  C = clear token and gist (disable sync)\n',
+          ''
+        );
+        const c = (choice || '').trim().toUpperCase();
+        if (c === 'T') {
+          await promptForGistToken();
+          alert('Token saved. Click ☁️ to push.');
+        } else if (c === 'G') {
+          await promptForGistId();
+          alert('Gist ID saved. Reload page to pull data from it.');
+        } else if (c === 'S') {
+          const id = getGistId();
+          window.prompt('Your Gist ID (copy and paste on other device via Alt+click → G):', id || '(none yet — click ☁️ first to create the gist)');
+        } else if (c === 'C') {
+          if (confirm('Clear sync settings? Local data stays. You can re-enter token later.')) {
+            localStorage.removeItem(GIST_TOKEN_KEY);
+            localStorage.removeItem(GIST_ID_KEY);
+            alert('Sync disabled. Reload page.');
+          }
+        }
+        return;
+      }
       if (e.shiftKey) {
         // Run network diagnostics + show recent log
         const results = [];
@@ -1627,14 +1736,15 @@
             results.push(label + ': FAIL (' + (err.name || 'Error') + ': ' + (err.message || 'unknown') + ', ' + ms + 'ms)');
           }
         };
+        const gid = getGistId();
         results.push('=== NETWORK DIAGNOSTICS ===');
         results.push('Origin: ' + location.origin);
-        results.push('Backend URL: ' + REMOTE_URL);
+        results.push('Has token: ' + (getGistToken() ? 'yes' : 'NO'));
+        results.push('Gist ID: ' + (gid || '(none — first push will create one)'));
         results.push('');
         await test('1. Internet (google no-cors)', 'https://www.google.com/generate_204', { mode: 'no-cors' });
-        await test('2. Backend reachable (no-cors)', REMOTE_URL, { mode: 'no-cors' });
-        await test('3. Backend GET (cors)', REMOTE_URL + '?_=' + Date.now(), { cache: 'no-store' });
-        await test('4. Backend POST (cors, small)', REMOTE_URL, { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: 'value=ping' });
+        await test('2. GitHub API reachable', 'https://api.github.com/zen', { headers: gistAuthHeaders() });
+        if (gid) await test('3. Gist GET', GIST_API + '/' + gid + '?_=' + Date.now(), { headers: gistAuthHeaders(), cache: 'no-store' });
         results.push('');
         results.push('=== RECENT SYNC LOG ===');
         let log = [];
@@ -1645,6 +1755,11 @@
         });
         prompt('Diagnostics — copy and send:', results.join('\n'));
         return;
+      }
+      // Plain click: if no token, prompt for it. Else push.
+      if (!getGistToken()) {
+        const t = await promptForGistToken();
+        if (!t) return;
       }
       // Manual click resets the silent-fail counter so retry actually retries
       consecutiveFailures = 0;
