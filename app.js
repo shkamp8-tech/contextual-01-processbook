@@ -501,6 +501,8 @@
     } catch (e) {}
   }
   let lastErrorMsg = null;
+  let consecutiveFailures = 0;
+  const MAX_FAILURES = 3; // after this, go quiet to avoid spam
   function setSyncStatus(state, title) {
     const el = document.getElementById('syncStatus');
     if (!el) return;
@@ -531,6 +533,12 @@
 
   async function pushToRemote(jsonString, attempt = 1) {
     if (!remoteSyncEnabled) return;
+    if (consecutiveFailures >= MAX_FAILURES) {
+      // Stay quiet — work locally without nagging. User can click ☁️ to retry.
+      const el = document.getElementById('syncStatus');
+      if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '💾'; el.title = 'Working in local-only mode (cloud unreachable). Click to retry.'; }
+      return;
+    }
     setSyncStatus('syncing', attempt > 1 ? 'Retrying upload… (' + attempt + ')' : 'Uploading changes…');
     try {
       const res = await fetchWithTimeout(REMOTE_URL, {
@@ -539,6 +547,7 @@
         body: 'value=' + encodeURIComponent(jsonString),
       }, 20000);
       if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+      consecutiveFailures = 0;
       setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString() + ' (' + Math.round(jsonString.length/1024) + 'KB)');
     } catch (e) {
       console.warn('Cloud sync push failed (attempt ' + attempt + '):', e);
@@ -546,8 +555,15 @@
         await new Promise(r => setTimeout(r, 1500 * attempt));
         return pushToRemote(jsonString, attempt + 1);
       }
+      consecutiveFailures++;
       const why = e.name === 'AbortError' ? 'timeout (' + Math.round(jsonString.length/1024) + 'KB — too big?)' : (e.message || 'network');
-      setSyncStatus('error', 'Sync failed: ' + why + '. Saved locally. Click ☁️ to retry.');
+      if (consecutiveFailures >= MAX_FAILURES) {
+        const el = document.getElementById('syncStatus');
+        if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '💾'; el.title = 'Cloud unreachable after ' + consecutiveFailures + ' tries. Working locally only. Click to retry.'; }
+        logSync('error', 'Sync disabled after ' + consecutiveFailures + ' failures: ' + why);
+      } else {
+        setSyncStatus('error', 'Sync failed: ' + why + '. Saved locally. Click ☁️ to retry.');
+      }
     }
   }
 
@@ -1630,6 +1646,8 @@
         prompt('Diagnostics — copy and send:', results.join('\n'));
         return;
       }
+      // Manual click resets the silent-fail counter so retry actually retries
+      consecutiveFailures = 0;
       setSyncStatus('syncing', 'Pushing local to cloud…');
       saveState();
     });
