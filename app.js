@@ -1686,85 +1686,128 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !editMode) pullFromRemote();
   });
-  // Click indicator: PUSH local to cloud (recover from accidental cloud overwrite)
+  // Click indicator: opens a touch-friendly menu (works on mobile + desktop)
   const syncEl = document.getElementById('syncStatus');
   if (syncEl) {
     syncEl.style.cursor = 'pointer';
-    syncEl.title = 'Click to push local to cloud · Shift+click for diagnostics · Alt+click to manage token/gist';
-    syncEl.addEventListener('click', async (e) => {
-      // Alt+click → manage token / gist id (re-enter token, link to existing gist, etc.)
-      if (e.altKey) {
-        const choice = window.prompt(
-          'GitHub Sync — manage settings\n\n' +
-          'Type:\n' +
-          '  T = enter/replace token\n' +
-          '  G = enter Gist ID (link to existing gist from another device)\n' +
-          '  S = show current Gist ID (to copy to other device)\n' +
-          '  C = clear token and gist (disable sync)\n',
-          ''
-        );
-        const c = (choice || '').trim().toUpperCase();
-        if (c === 'T') {
-          await promptForGistToken();
-          alert('Token saved. Click ☁️ to push.');
-        } else if (c === 'G') {
-          await promptForGistId();
-          alert('Gist ID saved. Reload page to pull data from it.');
-        } else if (c === 'S') {
-          const id = getGistId();
-          window.prompt('Your Gist ID (copy and paste on other device via Alt+click → G):', id || '(none yet — click ☁️ first to create the gist)');
-        } else if (c === 'C') {
-          if (confirm('Clear sync settings? Local data stays. You can re-enter token later.')) {
-            localStorage.removeItem(GIST_TOKEN_KEY);
-            localStorage.removeItem(GIST_ID_KEY);
-            alert('Sync disabled. Reload page.');
-          }
+    syncEl.title = 'Tap for sync menu';
+
+    async function runDiagnostics() {
+      const results = [];
+      const test = async (label, url, opts = {}) => {
+        const t0 = performance.now();
+        try {
+          const r = await fetchWithTimeout(url, opts, 6000);
+          const ms = Math.round(performance.now() - t0);
+          results.push(label + ': OK (HTTP ' + r.status + ', ' + ms + 'ms)');
+        } catch (err) {
+          const ms = Math.round(performance.now() - t0);
+          results.push(label + ': FAIL (' + (err.name || 'Error') + ': ' + (err.message || 'unknown') + ', ' + ms + 'ms)');
         }
-        return;
+      };
+      const gid = getGistId();
+      results.push('=== NETWORK DIAGNOSTICS ===');
+      results.push('Origin: ' + location.origin);
+      results.push('Has token: ' + (getGistToken() ? 'yes' : 'NO'));
+      results.push('Gist ID: ' + (gid || '(none)'));
+      results.push('');
+      await test('1. Internet', 'https://www.google.com/generate_204', { mode: 'no-cors' });
+      await test('2. GitHub API', 'https://api.github.com/zen', { headers: gistAuthHeaders() });
+      if (gid) await test('3. Gist GET', GIST_API + '/' + gid + '?_=' + Date.now(), { headers: gistAuthHeaders(), cache: 'no-store' });
+      results.push('');
+      results.push('=== RECENT SYNC LOG ===');
+      let log = [];
+      try { log = JSON.parse(localStorage.getItem(SYNC_LOG_KEY) || '[]'); } catch (err) {}
+      log.slice(-12).forEach(en => {
+        const tt = new Date(en.t).toLocaleTimeString();
+        results.push('[' + tt + '] ' + en.level.toUpperCase() + ': ' + en.msg);
+      });
+      prompt('Diagnostics — copy and send:', results.join('\n'));
+    }
+
+    function openSyncMenu() {
+      // Remove any existing menu
+      const existing = document.getElementById('syncMenu');
+      if (existing) { existing.remove(); return; }
+
+      const hasToken = !!getGistToken();
+      const gid = getGistId();
+      const menu = document.createElement('div');
+      menu.id = 'syncMenu';
+      menu.style.cssText = [
+        'position:fixed','top:60px','right:14px','z-index:10000',
+        'background:#1a1a1a','color:#fff','border:1px solid #444',
+        'border-radius:10px','padding:8px','min-width:240px',
+        'box-shadow:0 8px 30px rgba(0,0,0,0.5)','font:14px system-ui,sans-serif'
+      ].join(';');
+
+      const mkBtn = (label, onClick) => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.style.cssText = 'display:block;width:100%;text-align:left;background:transparent;color:#fff;border:none;padding:10px 12px;border-radius:6px;cursor:pointer;font:inherit';
+        b.addEventListener('mouseenter', () => b.style.background = '#2a2a2a');
+        b.addEventListener('mouseleave', () => b.style.background = 'transparent');
+        b.addEventListener('click', async () => { menu.remove(); await onClick(); });
+        return b;
+      };
+
+      const status = document.createElement('div');
+      status.style.cssText = 'padding:6px 12px 10px;border-bottom:1px solid #333;margin-bottom:6px;color:#aaa;font-size:12px';
+      status.textContent = (hasToken ? '✓ Token set' : '✗ No token') + ' · ' + (gid ? 'Gist linked' : 'No gist yet');
+      menu.appendChild(status);
+
+      if (hasToken) {
+        menu.appendChild(mkBtn('☁️  Push now (save to cloud)', async () => {
+          consecutiveFailures = 0;
+          setSyncStatus('syncing', 'Pushing local to cloud…');
+          saveState();
+        }));
+        menu.appendChild(mkBtn('⬇️  Pull now (load from cloud)', async () => {
+          consecutiveFailures = 0;
+          await pullFromRemote();
+        }));
       }
-      if (e.shiftKey) {
-        // Run network diagnostics + show recent log
-        const results = [];
-        const test = async (label, url, opts = {}) => {
-          const t0 = performance.now();
-          try {
-            const r = await fetchWithTimeout(url, opts, 6000);
-            const ms = Math.round(performance.now() - t0);
-            results.push(label + ': OK (HTTP ' + r.status + ', ' + ms + 'ms)');
-          } catch (err) {
-            const ms = Math.round(performance.now() - t0);
-            results.push(label + ': FAIL (' + (err.name || 'Error') + ': ' + (err.message || 'unknown') + ', ' + ms + 'ms)');
+      menu.appendChild(mkBtn(hasToken ? '🔑  Replace GitHub token' : '🔑  Enter GitHub token', async () => {
+        const t = await promptForGistToken();
+        if (t) {
+          consecutiveFailures = 0;
+          setSyncStatus('ok', 'Token saved. Tap menu → Push to upload.');
+        }
+      }));
+      menu.appendChild(mkBtn('🔗  Link to existing Gist (other device)', async () => {
+        const id = await promptForGistId();
+        if (id) alert('Gist ID saved. Tap menu → Pull to load data.');
+      }));
+      menu.appendChild(mkBtn('📋  Show my Gist ID (copy to other device)', async () => {
+        const id = getGistId();
+        prompt('Your Gist ID:', id || '(none yet — push first to create one)');
+      }));
+      menu.appendChild(mkBtn('🩺  Diagnostics', runDiagnostics));
+      menu.appendChild(mkBtn('🗑️  Clear sync settings', async () => {
+        if (confirm('Clear token & gist link? Local data stays. You can re-enter later.')) {
+          localStorage.removeItem(GIST_TOKEN_KEY);
+          localStorage.removeItem(GIST_ID_KEY);
+          location.reload();
+        }
+      }));
+      menu.appendChild(mkBtn('✕  Close', async () => {}));
+
+      document.body.appendChild(menu);
+      // Tap outside closes menu
+      setTimeout(() => {
+        const close = (ev) => {
+          if (!menu.contains(ev.target) && ev.target !== syncEl) {
+            menu.remove();
+            document.removeEventListener('click', close, true);
           }
         };
-        const gid = getGistId();
-        results.push('=== NETWORK DIAGNOSTICS ===');
-        results.push('Origin: ' + location.origin);
-        results.push('Has token: ' + (getGistToken() ? 'yes' : 'NO'));
-        results.push('Gist ID: ' + (gid || '(none — first push will create one)'));
-        results.push('');
-        await test('1. Internet (google no-cors)', 'https://www.google.com/generate_204', { mode: 'no-cors' });
-        await test('2. GitHub API reachable', 'https://api.github.com/zen', { headers: gistAuthHeaders() });
-        if (gid) await test('3. Gist GET', GIST_API + '/' + gid + '?_=' + Date.now(), { headers: gistAuthHeaders(), cache: 'no-store' });
-        results.push('');
-        results.push('=== RECENT SYNC LOG ===');
-        let log = [];
-        try { log = JSON.parse(localStorage.getItem(SYNC_LOG_KEY) || '[]'); } catch (err) {}
-        log.slice(-15).forEach(en => {
-          const tt = new Date(en.t).toLocaleTimeString();
-          results.push('[' + tt + '] ' + en.level.toUpperCase() + ': ' + en.msg);
-        });
-        prompt('Diagnostics — copy and send:', results.join('\n'));
-        return;
-      }
-      // Plain click: if no token, prompt for it. Else push.
-      if (!getGistToken()) {
-        const t = await promptForGistToken();
-        if (!t) return;
-      }
-      // Manual click resets the silent-fail counter so retry actually retries
-      consecutiveFailures = 0;
-      setSyncStatus('syncing', 'Pushing local to cloud…');
-      saveState();
+        document.addEventListener('click', close, true);
+      }, 0);
+    }
+
+    syncEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSyncMenu();
     });
   }
 })();
