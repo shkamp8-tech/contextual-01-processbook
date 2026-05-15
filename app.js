@@ -421,7 +421,8 @@
   const GIST_ID_KEY = 'processbook_gist_id';
   const GIST_FILENAME = 'contextual-01-processbook.json';
   const GIST_API = 'https://api.github.com/gists';
-  const SYNC_POLL_MS = 10000;
+  const SYNC_POLL_MS = 60000; // pull from cloud every 60s (GitHub gist API has limits)
+  const PUSH_DEBOUNCE_MS = 4000; // wait 4s after last edit before pushing
   let lastSyncedTimestamp = 0; // last timestamp we know about (local or remote)
   let remoteSyncEnabled = true;
   function getGistToken() { try { return localStorage.getItem(GIST_TOKEN_KEY) || ''; } catch (e) { return ''; } }
@@ -516,8 +517,8 @@
       } catch (e) {}
       localStorage.setItem(STORAGE_KEY, data);
       console.log('Saved:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
-      // Push to cloud (fire-and-forget)
-      pushToRemote(data);
+      // Push to cloud (debounced — batches rapid edits into one request)
+      schedulePush(data);
     } catch (e) {
       console.error('Failed to save state:', e);
     }
@@ -556,6 +557,41 @@
     if (state === 'error') logSync('error', title || '');
     else if (state === 'ok') logSync('ok', title || '');
   }
+
+  let pushTimer = null;
+  let pendingPushData = null;
+  function schedulePush(jsonString) {
+    pendingPushData = jsonString;
+    if (pushTimer) clearTimeout(pushTimer);
+    setSyncStatus('syncing', 'Saving… will sync in ' + Math.round(PUSH_DEBOUNCE_MS/1000) + 's');
+    pushTimer = setTimeout(() => {
+      pushTimer = null;
+      const data = pendingPushData;
+      pendingPushData = null;
+      if (data) pushToRemote(data);
+    }, PUSH_DEBOUNCE_MS);
+  }
+  // Flush pending push immediately if user closes/leaves the tab
+  window.addEventListener('beforeunload', () => {
+    if (pushTimer && pendingPushData) {
+      clearTimeout(pushTimer);
+      // Best-effort sync push (modern browsers may block, that's OK)
+      try {
+        const token = getGistToken();
+        const gid = getGistId();
+        if (token && gid && navigator.sendBeacon) {
+          // sendBeacon doesn't support custom headers — falls back to PATCH which won't work without auth.
+          // Just attempt regular fetch, browser may complete it.
+          fetch(GIST_API + '/' + gid, {
+            method: 'PATCH',
+            headers: { ...gistAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: { [GIST_FILENAME]: { content: pendingPushData } } }),
+            keepalive: true,
+          }).catch(() => {});
+        }
+      } catch (e) {}
+    }
+  });
 
   function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
     const ctrl = new AbortController();
@@ -615,11 +651,22 @@
       setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString() + ' (' + Math.round(jsonString.length/1024) + 'KB)');
     } catch (e) {
       console.warn('Cloud sync push failed (attempt ' + attempt + '):', e);
+      const msg = e.message || '';
       // 401 = bad token; don't retry, ask user to re-enter
-      if (/HTTP 401/.test(e.message || '')) {
-        setSyncStatus('error', 'GitHub token rejected. Click 🔑 to enter a new one.');
+      if (/HTTP 401/.test(msg) || /Bad credentials/i.test(msg)) {
+        setSyncStatus('error', 'GitHub token rejected. Tap menu → Replace token.');
         const el = document.getElementById('syncStatus');
         if (el) el.textContent = '🔑';
+        return;
+      }
+      // 403 rate-limit: back off, don't burn retries
+      if (/HTTP 403/.test(msg) && /rate limit/i.test(msg)) {
+        consecutiveFailures = MAX_FAILURES; // go quiet
+        const el = document.getElementById('syncStatus');
+        if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '⏳'; el.title = 'GitHub rate limit hit. Pausing sync for a few minutes — try again later.'; }
+        logSync('error', 'Rate limited; pausing sync.');
+        // Auto-recover after 5 minutes
+        setTimeout(() => { consecutiveFailures = 0; setSyncStatus('ok', 'Rate-limit cooldown over. Tap menu → Push to retry.'); }, 5 * 60 * 1000);
         return;
       }
       if (attempt < 3) {
