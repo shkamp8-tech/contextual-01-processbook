@@ -560,6 +560,8 @@
 
   let pushTimer = null;
   let pendingPushData = null;
+  let rateLimitedUntil = 0; // epoch ms; sync paused until this time
+  function isRateLimited() { return Date.now() < rateLimitedUntil; }
   function schedulePush(jsonString) {
     pendingPushData = jsonString;
     if (pushTimer) clearTimeout(pushTimer);
@@ -602,6 +604,10 @@
 
   async function pushToRemote(jsonString, attempt = 1) {
     if (!remoteSyncEnabled) return;
+    if (isRateLimited()) {
+      // Quietly defer; the cooldown timer will retry
+      return;
+    }
     const token = getGistToken();
     if (!token) {
       const el = document.getElementById('syncStatus');
@@ -661,12 +667,19 @@
       }
       // 403 rate-limit: back off, don't burn retries
       if (/HTTP 403/.test(msg) && /rate limit/i.test(msg)) {
-        consecutiveFailures = MAX_FAILURES; // go quiet
+        // Pause for 60 seconds (was 5 min — too long for normal use)
+        rateLimitedUntil = Date.now() + 60 * 1000;
+        consecutiveFailures = 0;
         const el = document.getElementById('syncStatus');
-        if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '⏳'; el.title = 'GitHub rate limit hit. Pausing sync for a few minutes — try again later.'; }
-        logSync('error', 'Rate limited; pausing sync.');
-        // Auto-recover after 5 minutes
-        setTimeout(() => { consecutiveFailures = 0; setSyncStatus('ok', 'Rate-limit cooldown over. Tap menu → Push to retry.'); }, 5 * 60 * 1000);
+        if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '⏳'; el.title = 'GitHub rate limit — sync paused for 60s, then automatic retry.'; }
+        logSync('error', 'Rate limited; pausing 60s.');
+        setTimeout(() => {
+          rateLimitedUntil = 0;
+          setSyncStatus('ok', 'Cooldown over.');
+          // Auto-retry the pending push
+          const data = JSON.stringify({ version: DATA_VERSION, timestamp: Date.now(), cards: CARDS, connections: CONNECTIONS });
+          pushToRemote(data);
+        }, 60 * 1000);
         return;
       }
       if (attempt < 3) {
@@ -687,6 +700,7 @@
 
   async function pullFromRemote() {
     if (!remoteSyncEnabled) return;
+    if (isRateLimited()) return false;
     const token = getGistToken();
     if (!token) return false;
     const gistId = getGistId();
@@ -1806,11 +1820,13 @@
       if (hasToken) {
         menu.appendChild(mkBtn('☁️  Push now (save to cloud)', async () => {
           consecutiveFailures = 0;
+          rateLimitedUntil = 0;
           setSyncStatus('syncing', 'Pushing local to cloud…');
           saveState();
         }));
         menu.appendChild(mkBtn('⬇️  Pull now (load from cloud)', async () => {
           consecutiveFailures = 0;
+          rateLimitedUntil = 0;
           await pullFromRemote();
         }));
       }
