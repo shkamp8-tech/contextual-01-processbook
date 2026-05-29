@@ -386,6 +386,150 @@
         }
       ]
     },
+    {
+      id: 'zine-the-point-between',
+      title: 'The Point Between',
+      subtitle: 'The zine — final outcome of the Contextual 2B research on the space between opposing forces.',
+      process: true,
+      phase: 'Design',
+      date: '2026-05-28',
+      x: 2000,
+      y: 200,
+      sections: [
+        {
+          heading: 'Research question',
+          text: 'How can design reveal the value of the middle ground between opposing forces?'
+        },
+        {
+          heading: 'Premise',
+          text: 'Opposites are not fixed separate sides but conditions that move into each other. The middle ground — the tipping zone — is where meaning becomes unstable and transformation can happen. The zine treats the two sides as analytical tools, not as a hard separation.'
+        },
+        {
+          heading: 'Structure',
+          bullets: [
+            'ONE SIDE — organising, structure, rules, categories, measurement. Simplification makes complexity legible but always leaves something unsaid.',
+            'TIPPING ZONE — the wider middle space where a shift starts to appear. A designer can shape conditions, not fully own the outcome.',
+            'THE OTHER SIDE — unstable, emotional, risky, unpredictable. Ambiguity treated not as a problem but as a resource for interpretation and engagement.',
+            'Sources spread closing the publication — the research evidence behind every claim.'
+          ]
+        },
+        {
+          heading: 'Form',
+          text: 'A folded publication (folder/booklet) for fellow students and tutors at Design Academy Eindhoven. Visual language oscillates between order (dotted grids, concentric circles, radiating lines) and chaos (entangled lines, scribbles, soft gradients) — the Apollonian/Dionysian axis is present without being named.'
+        }
+      ]
+    },
+    // ── Research sources behind "The Point Between" ──
+    {
+      id: 'src-liminal-design',
+      title: 'Liminal Design',
+      phase: 'Research',
+      desc: 'In-between space, transition, transformation. Liminality as a state where meaning becomes unstable — foundation for the "tipping zone" concept in the zine.',
+      links: [{ label: 'PMC article ↗', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9945118/' }],
+      date: '2026-05-15',
+      x: 1700,
+      y: 1100,
+    },
+    {
+      id: 'src-presence-absence',
+      title: 'Presence & Absence',
+      phase: 'Research',
+      desc: 'Contextual 2B discourse slides — what is shown, what is hidden, absence as meaning. Source for the idea that simplification always leaves something unsaid.',
+      link: '',
+      date: '2026-05-15',
+      x: 2050,
+      y: 1100,
+    },
+    {
+      id: 'src-ambiguity-resource',
+      title: 'Ambiguity as a Resource',
+      phase: 'Research',
+      desc: 'Gaver, Beaver & Benford — ambiguity treated not as a problem but as a design tool for interpretation and engagement. Core to the "other side" page of the zine.',
+      links: [{ label: 'ACM paper ↗', url: 'https://dl.acm.org/doi/10.1145/642611.642653' }],
+      date: '2026-05-15',
+      x: 2400,
+      y: 1100,
+    },
+    {
+      id: 'src-mingus-interview',
+      title: 'Interview — Mingus Peter Hopman',
+      phase: 'Research',
+      desc: 'Unexpected moments as "presents". Design can shape the conditions but not fully own the outcome — quoted on the top fold of the zine.',
+      links: [{ label: 'Transcript ↗', url: 'https://shkamp8-tech.github.io/interview-transcript/' }],
+      date: '2026-05-15',
+      x: 2750,
+      y: 1100,
+    },
+    {
+      id: 'src-competing-demands',
+      title: 'Competing Demands in Systems',
+      phase: 'Research',
+      desc: 'Design research on conflicting forces — they do not always need to be solved away; they can become material for design. Backs the closing paragraph on productive tension.',
+      links: [{ label: 'DRS paper ↗', url: 'https://dl.designresearchsociety.org/cgi/viewcontent.cgi?article=2829&context=drs-conference-papers' }],
+      date: '2026-05-15',
+      x: 1700,
+      y: 1450,
+    },
+    {
+      id: 'src-space-between-stories',
+      title: 'Design in the Space Between Stories',
+      phase: 'Research',
+      desc: 'The space between as a design space — frames the middle ground as a fragile relation where a project can begin before it becomes too fixed.',
+      links: [{ label: 'DiVA full text ↗', url: 'https://www.diva-portal.org/smash/get/diva2%3A1404330/FULLTEXT01.pdf' }],
+      date: '2026-05-15',
+      x: 2050,
+      y: 1450,
+    },
+    {
+      id: 'src-design-ambiguity',
+      title: 'Design Research and Ambiguity',
+      phase: 'Research',
+      desc: 'Green & Lindley — uncertainty, instability, complexity, value conflict as legitimate research conditions. Methodological backbone for treating the middle ground analytically.',
+      links: [{ label: 'EAD2021 paper ↗', url: 'https://designresearch.works/assets/papers/ead2021-design-and-ambiguity-green-lindley.pdf' }],
+      date: '2026-05-15',
+      x: 2400,
+      y: 1450,
+    },
+    {
+      id: 'src-embrace-opposites',
+      title: 'Embrace Opposites',
+      phase: 'Research',
+      desc: 'Interaction Design Foundation — opposites as a practical ideation method. Used to test how the polar structure of the zine can generate concrete design decisions.',
+      links: [{ label: 'IxDF article ↗', url: 'https://www.interaction-design.org/literature/topics/embrace-opposites' }],
+      date: '2026-05-15',
+      x: 2750,
+      y: 1450,
+    },
+    {
+      id: 'src-process-book',
+      title: 'Process Book (this canvas)',
+      phase: 'Research',
+      desc: 'Own process: mapping, visual tests, reflection. The infinite canvas you are looking at right now — primary evidence of the working method behind the zine.',
+      links: [{ label: 'Process book ↗', url: 'https://shkamp8-tech.github.io/contextual-01-processbook/' }],
+      date: '2026-05-15',
+      x: 1700,
+      y: 1800,
+    },
+    {
+      id: 'src-tutor-peer-feedback',
+      title: 'Tutor & Peer Feedback',
+      phase: 'Research',
+      desc: 'Contextual 2B, Design Academy Eindhoven, 2026 — feedback moments treated as research evidence and refinement, not afterthought.',
+      link: '',
+      date: '2026-05-15',
+      x: 2050,
+      y: 1800,
+    },
+    {
+      id: 'src-apollonian-dionysian',
+      title: 'Apollonian & Dionysian',
+      phase: 'Research',
+      desc: 'Nietzsche on art and the psyche — hidden background axis of the project: structure vs. chaos, measured vs. felt. Present in the zine without being named.',
+      links: [{ label: 'Philosophy Break ↗', url: 'https://philosophybreak.com/articles/apollonian-and-dionysian-nietzsche-on-art-and-the-psyche/' }],
+      date: '2026-05-15',
+      x: 2400,
+      y: 1800,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -407,6 +551,20 @@
     ['interview', 'interview-questions', 'bottom', 'top'],
     ['interview-questions', 'interview-questions-info', 'bottom', 'top'],
     ['interview', 'interview-analysis', 'bottom', 'top'],
+    // Zine ↔ research sources
+    ['zine-the-point-between', 'process', 'left', 'right'],
+    ['zine-the-point-between', 'src-liminal-design', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-presence-absence', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-ambiguity-resource', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-mingus-interview', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-competing-demands', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-space-between-stories', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-design-ambiguity', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-embrace-opposites', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-process-book', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-tutor-peer-feedback', 'bottom', 'top'],
+    ['zine-the-point-between', 'src-apollonian-dionysian', 'bottom', 'top'],
+    ['src-mingus-interview', 'interview', 'left', 'right'],
   ];
 
   // ════════════════════════════════════════
