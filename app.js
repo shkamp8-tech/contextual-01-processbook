@@ -530,6 +530,74 @@
       x: 2400,
       y: 1800,
     },
+    {
+      id: 'workshop-before-feedback',
+      title: 'Workshop — Before Feedback',
+      subtitle: 'Plan for a hands-on workshop exploring the middle ground between two opposites — tension as material for thinking, making and doing.',
+      process: true,
+      phase: 'Concepting',
+      date: '2026-06-16',
+      x: 3100,
+      y: 200,
+      sections: [
+        {
+          heading: 'Purpose',
+          bullets: [
+            'Exploration of the value of the middle ground between 2 opposites.',
+            'Tension = the material for thinking / doing / making.'
+          ]
+        },
+        {
+          heading: 'Methodology',
+          bullets: [
+            'Duration: 20–30 min',
+            'People: 4–10',
+            'Method: hands-on, reflective, experimental and controversial',
+            'Output: conversations and visualisations (material-based)?',
+            'Opposite themes and conversations will start from unwritten rules.'
+          ]
+        },
+        {
+          heading: 'Collaborations',
+          bullets: [
+            'Workshop space',
+            'Design students'
+          ]
+        },
+        {
+          heading: 'Reflexivity',
+          bullets: [
+            'Before — explain the assignment and prepare everything.',
+            'During — assist.',
+            'After — push towards a collective or personal reflection, give a conclusion, and frame what we have now as the starting point of a new project.'
+          ]
+        },
+        {
+          heading: 'Desired outcome',
+          bullets: [
+            'Participants understand that there is a middle ground that acts like a zone — and that for that, the opposite sides are necessary.',
+            'They experience the middle ground as material to work with.',
+            'I and the participants learn new things from each other because of the different perspectives.',
+            'They have something physical to bring home for inspiration.'
+          ]
+        },
+        {
+          heading: 'Theory',
+          bullets: [
+            'Tipping Point = a zone',
+            'Tension = material',
+            'Middle Ground = better than opposites',
+            'Translation = choosing what information gets lost',
+            'Unwritten rules = strong opinion while not political or harmful',
+            'Revealing the hidden structures, losses and possibilities in a space between.'
+          ]
+        },
+        {
+          heading: 'Documentation & archiving',
+          text: 'Inspiration work (physical) will be taken home by the participants if possible — I will take a picture of it. Any notes I take during the workshop will be stored.'
+        }
+      ]
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
