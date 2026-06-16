@@ -482,6 +482,139 @@ body.grabbing { cursor: grabbing; }
   margin: 0;
 }
 .card--process .card__bullets li { margin-bottom: 4px; }
+
+/* ── Reader link on cards (opens full text inside the book) ── */
+.card__link--reader {
+  cursor: pointer;
+  color: #c0892a;
+  font-weight: 600;
+}
+.card__link--reader:hover { color: #a8721f; text-decoration: underline; }
+
+/* ── Reader overlay: full long-form article ── */
+.reader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4vh 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: readerFade 0.18s ease;
+}
+@keyframes readerFade { from { opacity: 0; } to { opacity: 1; } }
+.reader {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 4px solid #d4a548;
+  border-radius: 16px;
+  width: min(780px, 100%);
+  margin: auto;
+  padding: 52px clamp(22px, 5vw, 64px) 64px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.4);
+}
+.reader__close {
+  position: sticky;
+  top: 0;
+  float: right;
+  margin: -36px -28px 0 0;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.15s;
+}
+.reader__close:hover { background: var(--bg); transform: scale(1.08); }
+.reader__content { color: var(--text); }
+.reader__doctitle {
+  font-size: clamp(1.6rem, 4vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 8px;
+}
+.reader__kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #c0892a;
+  margin: 0 0 28px;
+}
+.reader__section { margin: 0 0 30px; }
+.reader__h {
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(212,165,72,0.3);
+}
+.reader__sub {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #c0892a;
+  margin: 18px 0 6px;
+}
+.reader__p {
+  font-size: 0.98rem;
+  line-height: 1.72;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+.reader__em {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 600;
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  background: rgba(212,165,72,0.1);
+  border-left: 3px solid #d4a548;
+  border-radius: 0 8px 8px 0;
+}
+.reader__ul {
+  margin: 0 0 14px;
+  padding-left: 22px;
+  list-style: disc;
+}
+.reader__ul li {
+  font-size: 0.96rem;
+  line-height: 1.7;
+  margin-bottom: 6px;
+}
+.reader__plan-item {
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.reader__plan-time {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #c0892a;
+  margin-bottom: 4px;
+}
+.reader__plan-body {
+  font-size: 0.94rem;
+  line-height: 1.65;
+  margin: 0;
+}
 .card__bullets {
   margin: 0;
   padding: 0 0 0 18px;
@@ -542,6 +675,33 @@ body.grabbing { cursor: grabbing; }
   padding: 4px 10px;
   border-radius: 6px;
   pointer-events: none;
+}
+/* Placeholder shown when an image file isn't present yet */
+.card--preview.is-missing {
+  width: 320px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d4a548;
+  border-radius: 15px;
+  background: repeating-linear-gradient(45deg, rgba(212,165,72,0.05) 0 12px, rgba(212,165,72,0.1) 12px 24px);
+}
+.card--preview.is-missing .card__image { display: none; }
+.card--preview.is-missing .card__image-label {
+  position: static;
+  color: var(--text-muted);
+  background: transparent;
+  backdrop-filter: none;
+  text-align: center;
+  font-size: 0.82rem;
+  padding: 0 16px;
+  line-height: 1.5;
+}
+.card--preview.is-missing .card__image-label::after {
+  content: ' — image not added yet';
+  opacity: 0.7;
+  font-weight: 400;
 }
 
 /* ── Small card variant ── */

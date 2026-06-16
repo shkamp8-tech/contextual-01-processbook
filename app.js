@@ -598,6 +598,171 @@
         }
       ]
     },
+    {
+      id: 'workshop-poster',
+      title: 'Workshop Poster — Sarrón Harfsterkamp',
+      image: 'assets/workshop-poster.png',
+      x: 3700,
+      y: 950,
+    },
+    {
+      id: 'workshop-framework',
+      title: 'Workshop Framework',
+      phase: 'Concepting',
+      desc: 'The full framework for "The Point Between" workshop — purpose, core question, structure, audience, planning, theory and archiving. Click to read the entire document inside the book.',
+      date: '2026-06-16',
+      x: 3100,
+      y: 950,
+      readMoreLabel: '📖 Read full framework',
+      article: {
+        kicker: 'Workshop · full framework',
+        title: 'Workshop Framework: The Point Between',
+        sections: [
+          {
+            heading: '1. Purpose of the Workshop',
+            blocks: [
+              { p: 'The purpose of this workshop is to explore the value of the middle ground between two opposing forces. The workshop focuses on everyday unwritten rules within design and social behavior. These are rules that people often feel, follow, resist or question, even when they are not officially written down. Unwritten rules are used because everyone has some preferences in them, usually the opposites, while it is not too political or harmful. Instead of treating tension as something negative, the workshop uses tension as material. Participants translate unwritten rules into opposing forces, search for overlapping tensions, and use the space between them as a creative starting point for a future project.' }
+            ]
+          },
+          {
+            heading: '2. Core Question',
+            blocks: [
+              { em: 'How can design reveal the value of the middle ground between opposing forces?' },
+              { p: 'In this workshop, this question becomes practical. Participants do not only discuss tension, but they also physically work with it.' }
+            ]
+          },
+          {
+            heading: '3. Main Idea',
+            blocks: [
+              { p: 'The workshop follows this structure:' },
+              { em: 'Unwritten rule (brainstorm) → personal interpretation (evaluation) → opposing forces (discussion) → middle zone (word web) → shape research (prototyping) → zooming in and out (improving) → sharing work (evaluation)' },
+              { p: 'Participants begin individually, so different perspectives can appear. These individual perspectives are then brought together into a collective map. From this collective map, participants identify overlaps between their tensions. These overlaps become the starting points for making. We will start with paper and later make better prototypes with other materials. The final physical outcome does not need to be a finished design. It functions as a project seed: a small physical beginning that could later grow into a larger design project, research direction, object, installation, publication or performance.' }
+            ]
+          },
+          {
+            heading: '4. Target Audience',
+            blocks: [
+              { p: 'The workshop is designed for design students or creative participants who are interested in: design process / social behaviour / hidden rules / tension / ambiguity / material thinking / project development.' },
+              { p: 'The workshop does not require advanced making skills. The materials are simple and accessible, so the focus stays on thinking through making.' }
+            ]
+          },
+          {
+            heading: '5. Duration',
+            blocks: [
+              { em: 'Total duration: approximately 110 minutes' },
+              { p: 'This gives enough time for arrival, individual thinking, collective mapping, physical making and reflection.' }
+            ]
+          },
+          {
+            heading: '6. Participants',
+            blocks: [
+              { em: '6–12 participants' },
+              { p: 'This size keeps the workshop personal and manageable, while still creating enough variation between different perspectives.' }
+            ]
+          },
+          {
+            heading: '7. Materials',
+            blocks: [
+              { p: 'These are the materials I will bring for the workshop.' },
+              { ul: [
+                'Paper / cardboard / transparent sheets / tape / string / markers / scissors / post-its / labels / clips / small found materials / glue / camera or phone for documentation / printed unwritten rule cards / blank cards for participants to add their own rules.',
+                'Extras: coffee / tea / soda / water / small snacks / table covering.'
+              ] }
+            ]
+          },
+          {
+            heading: '8. Unwritten Rule Cards',
+            blocks: [
+              { p: 'The workshop uses a hybrid card system. Participants can choose from prepared unwritten rule cards, but they can also create their own. This gives me control over the safety and focus of the workshop, while still allowing personal interpretation. The rules should focus on design and social behavior. They should create tension, but avoid direct politics, personal trauma, discrimination or harmful discussion.' },
+              { sub: 'Example unwritten rule cards' },
+              { p: 'Always put the toilet seat down after using it. Hold the door open for someone behind you. Let people exit before you enter. Offer guests a drink before getting one for yourself. Take your shoes off when entering someone\u2019s home. Do not start eating before everyone has their food. Reply to a message once you have seen it. Do not sit directly next to someone if there are many empty seats. Bring something small when visiting someone\u2019s home. Offer to help clean up after dinner. Do not cancel plans last minute unless you have a real reason. Do not talk too loudly on public transport.' },
+              { p: 'Participants may also write their own rule, as long as it stays within the safe frame of the workshop.' }
+            ]
+          },
+          {
+            heading: '9. Safe Frame',
+            blocks: [
+              { p: 'The workshop should allow friction, but not harm. The focus is on everyday tensions, not on attacking people or debating heavy political topics. Participants are invited to share opinions, but not to target others personally. This keeps the workshop open without making the safety rules feel too strict or forced.' }
+            ]
+          },
+          {
+            heading: '10. Role of Me',
+            blocks: [
+              { sub: 'Before the workshop' },
+              { p: 'I prepare the space, materials, rule cards, blank cards and examples. The room should feel informal and open, with space for both individual work and collective making.' },
+              { sub: 'During the workshop' },
+              { p: 'I guide the process, but do not decide the outcome. The role is to help participants translate abstract tensions into physical decisions.' },
+              { p: 'I can ask questions such as: What is the tension inside this rule? What are the two forces pulling against each other? Where do these tensions overlap? What becomes visible in the middle? What gets lost in the translation? How could this become the beginning of a project?' },
+              { sub: 'After the workshop' },
+              { p: 'I document the physical outcomes, note key insights and reflect on how the workshop expanded the research. The outcomes can become part of an archive.' }
+            ]
+          },
+          {
+            heading: '11. Workshop Planning',
+            blocks: [
+              { plan: [
+                { time: '13:30 (15 min) — Arrival / Coffee / Informal Start', body: 'Participants arrive, get coffee, tea or snacks and enter the workshop space. The material table is already visible. Goal: create a relaxed atmosphere and introduce the material presence of the workshop.' },
+                { time: '13:45 (5 min) — Introduction', body: 'The main idea is explained: the workshop starts from unwritten rules / unwritten rules can reveal hidden tensions / tension is not treated as negative / tension can become material for form research / form research can become a project seed. Goal: give participants a clear conceptual frame without over-explaining.' },
+                { time: '13:50 (15 min) — Individual Brainstorm: Unwritten Rules', body: 'Participants choose an unwritten rule card or write their own. They individually write or sketch: What does this rule mean to me? Where do I notice this rule in design or social behaviour? What tension does this rule create? Goal: start from personal interpretation and create variation between participants.' },
+                { time: '14:05 (20 min) — Translating Rules into Opposing Forces', body: 'Participants translate their chosen unwritten rule into two opposing forces. Example — Unwritten rule: Let people exit before you enter. Force 1: patience / respect for others. Force 2: urgency / moving forward. Middle zone: waiting just long enough, without completely stopping your own movement. Each participant places the two forces on opposite sides of a sheet and writes or sketches what could exist between them. The middle zone does not have to solve the tension; it should show the moment where both forces are present at the same time. Goal: turn an everyday unwritten rule into a workable tension that can later be explored through form research.' },
+                { time: '14:25 (20 min) — Collective Mapping: Finding Overlaps', body: 'Participants place their individual sheets together on a shared table or wall. As a group they search for overlapping themes and shared tension zones. Possible overlaps: control vs freedom / clarity vs ambiguity / structure vs chaos / personal vs collective / finished vs unfinished / safety vs risk / visible vs hidden. I help with clustering the material without forcing one correct outcome. Goal: move from individual thinking into a shared research field.' },
+                { time: '14:45 (10 min) — Choosing a Tension Zone', body: 'Each participant or small group chooses one tension zone from the collective map. This chosen tension becomes the starting point for the form research. Goal: create a bridge between the research phase and the making phase.' },
+                { time: '14:55 (20 min) — Form Research with One Simple Material', body: 'All participants use the same simple materials: paper / tape / string / thread / scissors. Participants explore their chosen tension through material actions: fold / cut / tear / connect / stretch / layer / hide / reveal / balance / compress / open / close. The aim is not to make a final object yet, but to create several quick form studies. Participants should ask: How can this tension become a form? What does the material want to do? Where does the form feel stable or unstable? What part feels like the middle ground? What gets lost or revealed through the material translation? Goal: make the middle ground tangible through material experimentation.' },
+                { time: '15:15 (45 min) — Prototype: Turning One Study into a Project Seed', body: 'Participants choose one form study and develop it into a small prototype — a small object / a spatial structure / a wearable fragment / a tool / a model / a map / a material sample. The prototype does not need to solve the tension; it should show how the tension could become the beginning of a project. Goal: transform form research into a physical project seed.' },
+                { time: '16:00 (10 min) — Sharing / Reflection / Takeaway', body: 'Participants present their prototype briefly. They answer: What unwritten rule did you start from? What tension zone did you choose? What material action did you use? What did the form reveal? What could this prototype become later? Participants can take their prototype home. I photograph the outcomes and keep notes for documentation. Goal: connect the physical outcome back to the research and end with a clear takeaway.' }
+              ] }
+            ]
+          },
+          {
+            heading: '12. Desired Outcomes',
+            blocks: [
+              { p: 'By the end of the workshop, participants should:' },
+              { ul: [
+                'understand the middle ground as an active zone between opposing forces.',
+                'experience tension as material for thinking, making and project development.',
+                'recognize how unwritten rules shape design and social behavior.',
+                'move from individual interpretation to collective overlap.',
+                'create a physical project seed that can be taken home.',
+                'reflect on what becomes visible, lost or transformed through translation.'
+              ] },
+              { p: 'For my own research, the workshop helps me test how the theory of the middle ground can become a practical and shareable method. It also allows me to gather new perspectives from participants and see how different people translate tension into material form.' }
+            ]
+          },
+          {
+            heading: '13. Theory',
+            blocks: [
+              { sub: 'Tipping Point = A Zone' },
+              { p: 'A tipping point is not only one exact moment. It can be understood as part of a wider zone where a shift begins to appear. This zone is unstable, but productive.' },
+              { sub: 'Tension = Material' },
+              { p: 'Tension is usually seen as something that needs to be solved. In this workshop, tension becomes material. It can be shaped, translated, stretched and used as a starting point.' },
+              { sub: 'Middle Ground = Productive Zone' },
+              { p: 'The middle ground is not simply better than the opposites. It is valuable because it holds both sides in relation. It creates a space where something new can emerge.' },
+              { sub: 'Translation = Choosing What Gets Lost' },
+              { p: 'Every translation changes information. When an unwritten rule becomes a drawing, object or material structure, something is revealed and something else disappears. This loss is part of the research.' },
+              { sub: 'Unwritten Rules = Hidden Structures' },
+              { p: 'Unwritten rules reveal the invisible expectations that shape behaviour. They are useful because they can create strong opinions without immediately becoming political or harmful.' }
+            ]
+          },
+          {
+            heading: '14. Documentation / Archiving',
+            blocks: [
+              { p: 'The workshop will be documented through photographs and short notes. The archive will include:' },
+              { ul: [
+                'selected unwritten rules', 'individual brainstorm sheets', 'opposing forces',
+                'collective tension map', 'physical project seeds', 'reflection notes', 'photographs of outcomes'
+              ] },
+              { p: 'If possible, participants take their physical outcomes home. And I keep the photographic documentation and notes as part of the research archive.' }
+            ]
+          },
+          {
+            heading: '15. Why This Workshop Matters',
+            blocks: [
+              { p: 'This workshop is not only about discussing opposites. It is about learning how to use the space between opposites as a creative method. By starting from unwritten rules, the workshop stays close to everyday experience. By translating these rules into tension, participants can see how social behaviour and design decisions are shaped by invisible structures. By making something physical, the tension becomes usable as the beginning of a future project. The workshop turns friction into a building block.' }
+            ]
+          }
+        ]
+      }
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
@@ -633,6 +798,9 @@
     ['zine-the-point-between', 'src-tutor-peer-feedback', 'bottom', 'top'],
     ['zine-the-point-between', 'src-apollonian-dionysian', 'bottom', 'top'],
     ['src-mingus-interview', 'interview', 'left', 'right'],
+    // Workshop
+    ['workshop-before-feedback', 'workshop-framework', 'bottom', 'top'],
+    ['workshop-framework', 'workshop-poster', 'right', 'left'],
   ];
 
   // ════════════════════════════════════════
@@ -1181,6 +1349,68 @@
     return new Date(ds).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
+  // ════════════════════════════════════════
+  //  READER (full long-form text inside the book)
+  // ════════════════════════════════════════
+  const readerOverlay = document.getElementById('readerOverlay');
+  const readerContent = document.getElementById('readerContent');
+  const readerClose = document.getElementById('readerClose');
+
+  function renderArticleBlock(block) {
+    if (block.p) return `<p class="reader__p">${sanitize(block.p)}</p>`;
+    if (block.em) return `<p class="reader__em">${sanitize(block.em)}</p>`;
+    if (block.sub) return `<h3 class="reader__sub">${sanitize(block.sub)}</h3>`;
+    if (block.ul) return `<ul class="reader__ul">${block.ul.map(li => `<li>${sanitize(li)}</li>`).join('')}</ul>`;
+    if (block.plan) return block.plan.map(item =>
+      `<div class="reader__plan-item">
+        <span class="reader__plan-time">${sanitize(item.time)}</span>
+        <p class="reader__plan-body">${sanitize(item.body)}</p>
+      </div>`).join('');
+    return '';
+  }
+
+  function openReader(article) {
+    if (!article) return;
+    const sections = (article.sections || []).map(s =>
+      `<section class="reader__section">
+        ${s.heading ? `<h2 class="reader__h">${sanitize(s.heading)}</h2>` : ''}
+        ${(s.blocks || []).map(renderArticleBlock).join('')}
+      </section>`).join('');
+    readerContent.innerHTML = `
+      ${article.kicker ? `<p class="reader__kicker">${sanitize(article.kicker)}</p>` : ''}
+      ${article.title ? `<h1 class="reader__doctitle">${sanitize(article.title)}</h1>` : ''}
+      ${sections}`;
+    readerOverlay.style.display = 'flex';
+    readerContent.scrollTop = 0;
+    readerOverlay.scrollTop = 0;
+  }
+
+  function closeReader() {
+    readerOverlay.style.display = 'none';
+    readerContent.innerHTML = '';
+  }
+
+  if (readerClose) readerClose.addEventListener('click', closeReader);
+  if (readerOverlay) {
+    readerOverlay.addEventListener('click', (e) => {
+      if (e.target === readerOverlay) closeReader();
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && readerOverlay && readerOverlay.style.display === 'flex') closeReader();
+  });
+
+  // Open reader when a reader link is clicked (delegation survives card re-renders)
+  canvas.addEventListener('click', (e) => {
+    const link = e.target.closest('.card__link--reader');
+    if (!link) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = link.getAttribute('data-reader');
+    const card = CARDS.find(c => c.id === id);
+    if (card && card.article) openReader(card.article);
+  });
+
   function renderCards() {
     // Render cards first
     let cardsHtml = '';
@@ -1197,7 +1427,7 @@
       if (card.image) {
         cardsHtml += `
         <div class="card card--preview" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
-          <img class="card__image" src="${sanitize(card.image)}" alt="${sanitize(card.title)}" draggable="false" />
+          <img class="card__image" src="${sanitize(card.image)}" alt="${sanitize(card.title)}" draggable="false" onerror="this.closest('.card--preview').classList.add('is-missing')" />
           ${card.title ? `<span class="card__image-label">${sanitize(card.title)}</span>` : ''}
           ${handles}
         </div>`;
@@ -1260,6 +1490,10 @@
       } else if (card.link) {
         const label = card.linkLabel || 'View research ↗';
         linkHtml = `<a class="card__link" href="${sanitize(card.link)}" target="_blank" rel="noopener noreferrer">${sanitize(label)}</a>`;
+      }
+      if (card.article) {
+        const rlabel = card.readMoreLabel || '📖 Read full text';
+        linkHtml += `<a class="card__link card__link--reader" href="#" data-reader="${sanitize(card.id)}">${sanitize(rlabel)}</a>`;
       }
       const smallClass = card.small ? ' card--small' : '';
       cardsHtml += `
