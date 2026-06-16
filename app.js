@@ -862,13 +862,27 @@
           // Merge in any NEW default cards that don't exist locally yet (non-destructive)
           const localIds = new Set(CARDS.map(c => c.id));
           let added = 0;
+          const newlyAdded = new Set();
           for (const dc of DEFAULT_CARDS) {
             if (!localIds.has(dc.id)) {
               CARDS.push(JSON.parse(JSON.stringify(dc)));
+              newlyAdded.add(dc.id);
               added++;
             }
           }
-          if (added) { console.log('Added', added, 'new default cards'); saveState(); }
+          // Merge default connections that touch a newly-added card (don't resurrect user-deleted ones)
+          let addedConns = 0;
+          const connKey = (c) => c.join('|');
+          const existingConns = new Set((CONNECTIONS || []).map(connKey));
+          const cardIds = new Set(CARDS.map(c => c.id));
+          for (const dconn of DEFAULT_CONNECTIONS) {
+            const touchesNew = newlyAdded.has(dconn[0]) || newlyAdded.has(dconn[1]);
+            if (touchesNew && !existingConns.has(connKey(dconn)) && cardIds.has(dconn[0]) && cardIds.has(dconn[1])) {
+              CONNECTIONS.push(JSON.parse(JSON.stringify(dconn)));
+              addedConns++;
+            }
+          }
+          if (added || addedConns) { console.log('Added', added, 'new default cards,', addedConns, 'connections'); saveState(); }
           console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }
