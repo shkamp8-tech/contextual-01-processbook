@@ -771,7 +771,8 @@ body.grabbing { cursor: grabbing; }
 .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 .btn-primary:hover { opacity: 0.85; }
 
-.editing-mode .card { cursor: grab; }
+.editing-mode .card { cursor: grab; touch-action: none; }
+.editing-mode .card .handle { touch-action: none; }
 .editing-mode .card.dragging { cursor: grabbing; opacity: 0.85; z-index: 100; }
 .editing-mode .card:hover { outline: 2px dashed var(--accent); outline-offset: 4px; }
 

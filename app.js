@@ -1277,6 +1277,11 @@
   // Touch pan & pinch zoom
   let lastTouchDist = 0;
   viewport.addEventListener('touchstart', (e) => {
+    // In edit mode, let cards/handles handle their own touch dragging (don't pan)
+    if (editMode && e.touches.length === 1 && e.target.closest('.card')) {
+      isPanning = false;
+      return;
+    }
     if (e.touches.length === 1) {
       isPanning = true;
       startX = e.touches[0].clientX - panX;
@@ -1290,6 +1295,8 @@
     }
   }, { passive: false });
   viewport.addEventListener('touchmove', (e) => {
+    // Don't hijack touchmove while a card is being dragged in edit mode
+    if (editMode && isDragging) return;
     e.preventDefault();
     if (e.touches.length === 1 && isPanning) {
       panX = e.touches[0].clientX - startX;
@@ -1757,11 +1764,11 @@
   function setupDrag() {
     if (!editMode) return;
     document.querySelectorAll('.card').forEach(el => {
-      el.addEventListener('mousedown', onDragStart);
+      el.addEventListener('pointerdown', onDragStart);
       el.addEventListener('contextmenu', onCardCtx);
     });
     document.querySelectorAll('.handle').forEach(h => {
-      h.addEventListener('mousedown', onHandleStart);
+      h.addEventListener('pointerdown', onHandleStart);
     });
   }
 
@@ -1772,16 +1779,18 @@
     const el = e.target.closest('.card');
     if (!el) return;
     if (e.target.closest('.handle')) return;
-    // In non-edit mode, allow links; in edit mode, prevent default for drag
-    if (e.target.closest('a') && !editMode) return;
+    // Don't start a drag when tapping a link
+    if (e.target.closest('a')) return;
     e.preventDefault();
     e.stopPropagation();
     isDragging = true;
+    isPanning = false;
     dragCard = el;
     dragCard.classList.add('dragging');
     const id = el.id.replace('card-', '');
     const card = CARDS.find(c => c.id === id);
     if (!card) return;
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
     const [sx, sy] = clientToCanvas(e.clientX, e.clientY);
     dragOffX = sx - card.x;
     dragOffY = sy - card.y;
@@ -1800,11 +1809,14 @@
       if (dragCard) dragCard.classList.remove('dragging');
       dragCard = null;
       saveState();
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      try { el.releasePointerCapture(e.pointerId); } catch (err) {}
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
     }
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
   }
 
   // \u2500\u2500 Drag from handle to create connection (Obsidian-style) \u2500\u2500
@@ -1826,6 +1838,7 @@
     const fromSide = handle.dataset.side;
     const from = CARDS.find(c => c.id === fromId);
     if (!from) return;
+    try { handle.setPointerCapture(e.pointerId); } catch (err) {}
 
     // Create temp SVG with curved path
     let svg = canvas.querySelector('.conn-temp');
@@ -1883,8 +1896,10 @@
       if (highlightEl) highlightEl.classList.add('snap-target');
     }
     function onUp(ev) {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      try { handle.releasePointerCapture(e.pointerId); } catch (err) {}
       svg.removeChild(tempPath);
       if (highlightEl) { highlightEl.classList.remove('snap-target'); highlightEl = null; }
 
@@ -1934,8 +1949,9 @@
         renderCards();
       }
     }
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
   }
 
   // Find the closest card within snap range (picks nearest, not first)
