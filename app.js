@@ -419,6 +419,20 @@
         }
       ]
     },
+    {
+      id: 'zine-a3-page-01',
+      title: 'The Point Between — Zine (page 1)',
+      image: 'assets/zine-a3-01.png',
+      x: 2400,
+      y: 200,
+    },
+    {
+      id: 'zine-a3-page-02',
+      title: 'The Point Between — Zine (page 2)',
+      image: 'assets/zine-a3-02.png',
+      x: 2800,
+      y: 200,
+    },
     // ── Research sources behind "The Point Between" ──
     {
       id: 'src-liminal-design',
@@ -767,41 +781,8 @@
 
   // Connections: [fromId, toId, fromSide, toSide]
   // sides: 'bottom', 'top', 'left', 'right'
-  const DEFAULT_CONNECTIONS = [
-    ['fascination', 'wordweb', 'bottom', 'top'],
-    ['fascination', 'fascination-photo', 'right', 'left'],
-    ['fascination', 'fascination-info', 'right', 'left'],
-    ['oldschool', 'wordweb', 'bottom', 'top'],
-    ['wordweb', 'wordweb-preview', 'right', 'left'],
-    ['fascination-info', 'interview', 'bottom', 'top'],
-    ['fascination-info', 'notes', 'bottom', 'top'],
-    ['wordweb', 'theme', 'bottom', 'top'],
-    ['fascination', 'mediums', 'bottom', 'top'],
-    ['wordweb', 'mediums', 'bottom', 'top'],
-    ['mediums', 'library-of-babel', 'bottom', 'top'],
-    ['mediums', 'spectre-tile', 'bottom', 'top'],
-    ['interview', 'conversation-notes', 'bottom', 'top'],
-    ['interview', 'interview-questions', 'bottom', 'top'],
-    ['interview-questions', 'interview-questions-info', 'bottom', 'top'],
-    ['interview', 'interview-analysis', 'bottom', 'top'],
-    // Zine ↔ research sources
-    ['zine-the-point-between', 'process', 'left', 'right'],
-    ['zine-the-point-between', 'src-liminal-design', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-presence-absence', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-ambiguity-resource', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-mingus-interview', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-competing-demands', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-space-between-stories', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-design-ambiguity', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-embrace-opposites', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-process-book', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-tutor-peer-feedback', 'bottom', 'top'],
-    ['zine-the-point-between', 'src-apollonian-dionysian', 'bottom', 'top'],
-    ['src-mingus-interview', 'interview', 'left', 'right'],
-    // Workshop
-    ['workshop-before-feedback', 'workshop-framework', 'bottom', 'top'],
-    ['workshop-framework', 'workshop-poster', 'right', 'left'],
-  ];
+  // Cleared per user request — only cards & photos, no connecting lines.
+  const DEFAULT_CONNECTIONS = [];
 
   // ════════════════════════════════════════
   //  PERSISTENCE (localStorage)
@@ -859,6 +840,13 @@
           CARDS = state.cards || [];
           CONNECTIONS = state.connections || [];
           lastSyncedTimestamp = state.timestamp || 0;
+          // One-time wipe of all connections (user requested cards & photos only)
+          const CONNS_CLEARED_KEY = 'processbook_conns_cleared_v1';
+          let clearedConns = false;
+          if (!localStorage.getItem(CONNS_CLEARED_KEY)) {
+            if (CONNECTIONS.length) { CONNECTIONS = []; clearedConns = true; }
+            localStorage.setItem(CONNS_CLEARED_KEY, '1');
+          }
           // Merge in any NEW default cards that don't exist locally yet (non-destructive)
           const localIds = new Set(CARDS.map(c => c.id));
           let added = 0;
@@ -882,7 +870,7 @@
               addedConns++;
             }
           }
-          if (added || addedConns) { console.log('Added', added, 'new default cards,', addedConns, 'connections'); saveState(); }
+          if (added || addedConns || clearedConns) { console.log('Added', added, 'new default cards,', addedConns, 'connections; clearedConns:', clearedConns); saveState(); }
           console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }
