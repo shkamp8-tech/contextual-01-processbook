@@ -65,6 +65,11 @@
   //  DATA – hardcoded defaults (overridden by localStorage)
   // ════════════════════════════════════════
   const DEFAULT_CARDS = [
+    // ── Section label cards (draggable headers) ──
+    { id: 'label-onderzoek', label: true, title: 'Onderzoek', x: 200, y: 60 },
+    { id: 'label-interview', label: true, title: 'Interview', x: 560, y: 60 },
+    { id: 'label-zine', label: true, title: 'Zine', x: 920, y: 60 },
+    { id: 'label-workshop', label: true, title: 'Workshop', x: 1280, y: 60 },
     {
       id: 'fascination',
       title: 'Fascination Research',
@@ -1432,6 +1437,16 @@
     CARDS.forEach(card => {
       const color = PHASE_COLORS[card.phase] || 'var(--text-muted)';
 
+      // Section label card (big draggable header)
+      if (card.label) {
+        cardsHtml += `
+        <div class="card card--label" id="card-${card.id}" style="left:${card.x}px; top:${card.y}px;">
+          <span class="card__label-text">${sanitize(card.title)}</span>
+          ${handles}
+        </div>`;
+        return;
+      }
+
       // Image preview card
       if (card.image) {
         cardsHtml += `
@@ -2294,6 +2309,25 @@
       status.style.cssText = 'padding:6px 12px 10px;border-bottom:1px solid #333;margin-bottom:6px;color:#aaa;font-size:12px';
       status.textContent = (hasToken ? '✓ Token set' : '✗ No token') + ' · ' + (gid ? 'Gist linked' : 'No gist yet');
       menu.appendChild(status);
+
+      // Export positions — copy a compact list of every card/photo position
+      // so it can be pasted back into chat and committed to git directly.
+      menu.appendChild(mkBtn('📤  Export card positions (copy)', async () => {
+        const positions = CARDS.map(c => ({ id: c.id, x: Math.round(c.x), y: Math.round(c.y) }));
+        const text = 'POSITIONS v' + DATA_VERSION + '\n' + JSON.stringify(positions, null, 0);
+        let copied = false;
+        try {
+          await navigator.clipboard.writeText(text);
+          copied = true;
+        } catch (e) { /* clipboard blocked — fall back to prompt */ }
+        // Always show a selectable prompt as a fallback / confirmation
+        window.prompt(
+          copied
+            ? '✓ Copied to clipboard! Paste it into the chat. (Shown here too if needed.)'
+            : 'Copy this text and paste it into the chat:',
+          text
+        );
+      }));
 
       if (hasToken) {
         menu.appendChild(mkBtn('☁️  Push now (save to cloud)', async () => {

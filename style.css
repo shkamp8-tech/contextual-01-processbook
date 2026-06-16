@@ -704,6 +704,31 @@ body.grabbing { cursor: grabbing; }
   font-weight: 400;
 }
 
+/* ── Section label card (big draggable header) ── */
+.card--label {
+  width: auto;
+  min-width: 160px;
+  max-width: 420px;
+  background: var(--accent);
+  border: none;
+  border-radius: 14px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+}
+.card--label .card__label-text {
+  display: block;
+  padding: 14px 28px;
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 /* ── Small card variant ── */
 .card--small {
   width: 200px;
