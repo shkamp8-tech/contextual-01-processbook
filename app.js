@@ -768,6 +768,17 @@
   }
   let CARDS, CONNECTIONS;
 
+  // Cards that were intentionally removed. Filtered out on load so they can never
+  // be resurrected from old localStorage (e.g. after a version bump or import).
+  const REMOVED_CARD_IDS = new Set([
+    'interview', 'notes', 'questions', 'research-questions',
+    'process', 'src-presence-absence', 'src-process-book',
+  ]);
+  function purgeRemoved() {
+    if (Array.isArray(CARDS)) CARDS = CARDS.filter(c => !REMOVED_CARD_IDS.has(c.id));
+    if (Array.isArray(CONNECTIONS)) CONNECTIONS = CONNECTIONS.filter(c => !REMOVED_CARD_IDS.has(c[0]) && !REMOVED_CARD_IDS.has(c[1]));
+  }
+
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -777,6 +788,10 @@
           CARDS = state.cards || [];
           CONNECTIONS = state.connections || [];
           lastSyncedTimestamp = state.timestamp || 0;
+          // Drop any intentionally-removed cards lingering in old saved data
+          const beforeCount = CARDS.length;
+          purgeRemoved();
+          const purged = beforeCount - CARDS.length;
           // Merge in any NEW default cards that don't exist locally yet (non-destructive)
           const localIds = new Set(CARDS.map(c => c.id));
           let added = 0;
@@ -800,7 +815,7 @@
               addedConns++;
             }
           }
-          if (added || addedConns) { console.log('Added', added, 'new default cards,', addedConns, 'connections'); saveState(); }
+          if (added || addedConns || purged) { console.log('Added', added, 'cards,', addedConns, 'connections; purged', purged); saveState(); }
           console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }
@@ -808,14 +823,15 @@
         const oldCards = state.cards || [];
         const defaultIds = new Set(DEFAULT_CARDS.map(c => c.id));
         CARDS = JSON.parse(JSON.stringify(DEFAULT_CARDS));
-        // Keep user-created cards (e.g. uploaded images) that aren't in defaults
+        // Keep user-created cards (e.g. uploaded images) that aren't in defaults and weren't removed
         for (const oc of oldCards) {
-          if (!defaultIds.has(oc.id)) {
+          if (!defaultIds.has(oc.id) && !REMOVED_CARD_IDS.has(oc.id)) {
             CARDS.push(oc);
           }
         }
         // Fully reset connections to defaults (drops user-deleted defaults & old custom ones)
         CONNECTIONS = JSON.parse(JSON.stringify(DEFAULT_CONNECTIONS));
+        purgeRemoved();
         saveState();
         return;
       }
