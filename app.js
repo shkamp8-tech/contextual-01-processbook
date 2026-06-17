@@ -66,10 +66,10 @@
   // ════════════════════════════════════════
   const DEFAULT_CARDS = [
     // ── Section label cards (draggable headers) ──
-    { id: 'label-onderzoek', label: true, title: 'Onderzoek', x: 200, y: 60 },
-    { id: 'label-interview', label: true, title: 'Interview', x: 560, y: 60 },
-    { id: 'label-zine', label: true, title: 'Zine', x: 920, y: 60 },
-    { id: 'label-workshop', label: true, title: 'Workshop', x: 1280, y: 60 },
+    { id: 'label-onderzoek', label: true, title: 'Research', x: 3080, y: -1220 },
+    { id: 'label-interview', label: true, title: 'Interview', x: 3560, y: -600 },
+    { id: 'label-zine', label: true, title: 'Zine', x: 3060, y: 120 },
+    { id: 'label-workshop', label: true, title: 'Workshop', x: 3360, y: 880 },
     {
       id: 'fascination',
       title: 'Fascination Research',
@@ -78,8 +78,8 @@
       link: 'https://shkamp8-tech.github.io/fascination-project-research/',
       date: '2026-02-20',
       pin: '0001',
-      x: 0,
-      y: 0,
+      x: 2600,
+      y: -1400,
     },
     {
       id: 'fascination-photo',
@@ -89,8 +89,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 340,
-      y: -200,
+      x: 1940,
+      y: -1640,
       image: 'assets/fascination.jpg',
     },
     {
@@ -101,8 +101,8 @@
       link: '',
       date: '',
       pin: '',
-      x: 340,
-      y: 200,
+      x: 2600,
+      y: -1640,
       info: true,
     },
     {
@@ -113,8 +113,8 @@
       link: 'https://shkamp8-tech.github.io/wordweb/',
       date: '2026-02-27',
       pin: '0002',
-      x: -300,
-      y: 260,
+      x: 2600,
+      y: -1160,
     },
     {
       id: 'wordweb-preview',
@@ -124,8 +124,8 @@
       link: '',
       date: '',
       pin: '',
-      x: -720,
-      y: 180,
+      x: 1940,
+      y: -1580,
       image: 'assets/wordweb.png',
     },
     {
@@ -136,31 +136,8 @@
       link: '',
       date: '',
       pin: '',
-      x: -200,
-      y: 40,
-      small: true,
-    },
-    {
-      id: 'interview',
-      title: 'Interview',
-      phase: 'Research',
-      desc: 'Interviews conducted with peers and experts to explore perspectives on interaction, control, and unpredictability in design.',
-      link: 'https://shkamp8-tech.github.io/interview-transcript/',
-      date: '2026-04-08',
-      pin: '0003',
-      x: -60,
-      y: 1700,
-    },
-    {
-      id: 'notes',
-      title: 'Notes',
-      phase: 'Research',
-      desc: '',
-      link: '',
-      date: '2026-03-13',
-      pin: '',
-      x: 20,
-      y: 840,
+      x: 1340,
+      y: -1320,
       small: true,
     },
     {
@@ -171,8 +148,8 @@
       link: '',
       date: '2026-04-08',
       pin: '',
-      x: -160,
-      y: 1020,
+      x: 2460,
+      y: -420,
       small: true,
     },
     {
@@ -184,8 +161,8 @@
       linkLabel: 'Explore Library \u2197',
       date: '2026-04-13',
       pin: '',
-      x: 500,
-      y: 480,
+      x: 3860,
+      y: -1180,
     },
     {
       id: 'spectre-tile',
@@ -198,8 +175,8 @@
       ],
       date: '2026-04-13',
       pin: '',
-      x: 500,
-      y: 780,
+      x: 3860,
+      y: -1500,
     },
     {
       id: 'mediums',
@@ -209,8 +186,8 @@
       link: '',
       date: '2026-03-06',
       pin: '',
-      x: 140,
-      y: 600,
+      x: 3400,
+      y: -1380,
       small: true,
     },
     {
@@ -221,8 +198,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: -40,
-      y: 1220,
+      x: 2740,
+      y: -520,
     },
     {
       id: 'interview-questions',
@@ -232,8 +209,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: -40,
-      y: 1480,
+      x: 3880,
+      y: -820,
     },
     {
       id: 'interview-questions-info',
@@ -256,8 +233,8 @@
       link: '',
       date: '2026-04-16',
       pin: '',
-      x: -560,
-      y: 1600,
+      x: 4400,
+      y: -820,
       info: true,
     },
     {
@@ -269,8 +246,8 @@
       linkLabel: 'Watch TED Talk ↗',
       date: '2026-04-16',
       pin: '',
-      x: -600,
-      y: 820,
+      x: 2060,
+      y: -680,
     },
     {
       id: 'interview-analysis',
@@ -280,8 +257,8 @@
       link: '',
       date: '2026-04-17',
       pin: '',
-      x: -40,
-      y: 1960,
+      x: 3080,
+      y: -840,
     },
     {
       id: 'visualisation-tools',
@@ -291,19 +268,8 @@
       link: '',
       date: '2026-04-17',
       pin: '',
-      x: -1060,
-      y: 940,
-    },
-    {
-      id: 'questions',
-      title: 'Questions',
-      phase: 'Research',
-      desc: 'Core questions driving the research and design process.',
-      link: '',
-      date: '2026-04-17',
-      pin: '',
-      x: -680,
-      y: 1080,
+      x: 3400,
+      y: -1140,
     },
     {
       id: 'porphyrius-tree',
@@ -313,83 +279,8 @@
       link: '',
       date: '2026-04-17',
       pin: '',
-      x: 400,
-      y: 1200,
-    },
-    {
-      id: 'research-questions',
-      title: 'Research Questions',
-      phase: 'Research',
-      desc: '',
-      link: '',
-      date: '',
-      pin: '',
-      x: 700,
-      y: 1400,
-    },
-    {
-      id: 'process',
-      title: 'Process',
-      subtitle: 'From tension to harmony — what happens in the space between opposites, and what gets lost when we try to name it.',
-      process: true,
-      phase: 'Analysis',
-      date: '2026-05-13',
-      x: 1000,
-      y: 1700,
-      sections: [
-        {
-          heading: 'The core',
-          text: 'A study of how opposites — order/chaos, control/unpredictability, Apollonian/Dionysian — do not stand apart but live on a spectrum, and how the most interesting things happen at the tipping point where one becomes the other. The aim is not to choose a side, but to make the in-between visible.'
-        },
-        {
-          heading: 'The hidden axis',
-          text: 'Apollonian ↔ Dionysian functions as the underlying axis of the project. It will not be named explicitly in the final outcome, but it shapes every choice: what is structured vs. what is felt, what is measured vs. what is sensed, what is intentional vs. what is given.'
-        },
-        {
-          heading: 'Tipping point & spectrum',
-          bullets: [
-            'When does something tip from order into chaos, or from control into surrender?',
-            'Is the tipping point a threshold (a line) or a zone (a gradient)?',
-            'What does the spectrum between two poles actually contain — and can it be experienced, not just described?',
-            'Can a designer design the tipping point itself, or only the conditions for it to occur?'
-          ]
-        },
-        {
-          heading: 'Lost information',
-          text: 'Every translation, simplification, or categorisation throws something away — consciously or not. To name a thing is to leave another thing unnamed. The zine should make the reader feel this loss, not just understand it.'
-        },
-        {
-          heading: 'Control & the gift',
-          text: 'Nothing is ever fully under control or perfect — anything can break, deform, be interrupted. We can only strive toward the best possible outcome and stay open to what arrives uninvited. Mingus calls these moments “presents”: the bird of prey on the lightning-pole, people walking through the holes in the ship. The unplanned is part of the work.'
-        },
-        {
-          heading: 'From tension to harmony',
-          text: 'Two opposites meeting do not have to fight. Mingus’ double-function objects show that polarity can resolve into joy without losing either side. Balance is not the absence of opposites — balance is the harmony between them.'
-        },
-        {
-          heading: 'Method',
-          bullets: [
-            'Start from the 21-mirror installation as a vehicle, not a subject.',
-            'Use the wordweb as the structural map — Dionysian / Apollonian as silent axis.',
-            'Treat the interview “presents” as evidence, not anecdote.',
-            'Let categorisation itself become a topic — show what falls outside.'
-          ]
-        },
-        {
-          heading: 'The zine',
-          text: 'A small folder/booklet for fellow students and tutors at Design Academy (general public welcome but secondary). The tone takes a clear stance through open-feeling phrasing — no questions on the page, but every spread should leave the reader with one in their head.'
-        },
-        {
-          heading: 'Directions to keep researching',
-          bullets: [
-            'Find tipping points in design, nature, music, language — collect concrete examples.',
-            'Map what each act of categorisation excludes (margins, exceptions, noise).',
-            'Test the difference between a threshold and a gradient as a visual/spatial language.',
-            'Look at Nietzsche’s Apollonian/Dionysian, but stay close to your own visual vocabulary.',
-            'Develop one or two visual motifs that carry the spectrum across the zine spreads.'
-          ]
-        }
-      ]
+      x: 3860,
+      y: -1840,
     },
     {
       id: 'zine-the-point-between',
@@ -398,8 +289,8 @@
       process: true,
       phase: 'Design',
       date: '2026-05-28',
-      x: 2000,
-      y: 200,
+      x: 1520,
+      y: -1420,
       sections: [
         {
           heading: 'Research question',
@@ -428,15 +319,15 @@
       id: 'zine-a3-page-01',
       title: 'The Point Between — Zine (page 1)',
       image: 'assets/zine-a3-01.png',
-      x: 2400,
-      y: 200,
+      x: 3540,
+      y: -3640,
     },
     {
       id: 'zine-a3-page-02',
       title: 'The Point Between — Zine (page 2)',
       image: 'assets/zine-a3-02.png',
-      x: 2800,
-      y: 200,
+      x: 3540,
+      y: -3580,
     },
     // ── Research sources behind "The Point Between" ──
     {
@@ -446,18 +337,8 @@
       desc: 'In-between space, transition, transformation. Liminality as a state where meaning becomes unstable — foundation for the "tipping zone" concept in the zine.',
       links: [{ label: 'PMC article ↗', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9945118/' }],
       date: '2026-05-15',
-      x: 1700,
-      y: 1100,
-    },
-    {
-      id: 'src-presence-absence',
-      title: 'Presence & Absence',
-      phase: 'Research',
-      desc: 'Contextual 2B discourse slides — what is shown, what is hidden, absence as meaning. Source for the idea that simplification always leaves something unsaid.',
-      link: '',
-      date: '2026-05-15',
-      x: 2050,
-      y: 1100,
+      x: 1000,
+      y: 60,
     },
     {
       id: 'src-ambiguity-resource',
@@ -466,8 +347,8 @@
       desc: 'Gaver, Beaver & Benford — ambiguity treated not as a problem but as a design tool for interpretation and engagement. Core to the "other side" page of the zine.',
       links: [{ label: 'ACM paper ↗', url: 'https://dl.acm.org/doi/10.1145/642611.642653' }],
       date: '2026-05-15',
-      x: 2400,
-      y: 1100,
+      x: 820,
+      y: 900,
     },
     {
       id: 'src-mingus-interview',
@@ -476,8 +357,9 @@
       desc: 'Unexpected moments as "presents". Design can shape the conditions but not fully own the outcome — quoted on the top fold of the zine.',
       links: [{ label: 'Transcript ↗', url: 'https://shkamp8-tech.github.io/interview-transcript/' }],
       date: '2026-05-15',
-      x: 2750,
-      y: 1100,
+      x: 3880,
+      y: -500,
+      pin: '0003',
     },
     {
       id: 'src-competing-demands',
@@ -486,8 +368,8 @@
       desc: 'Design research on conflicting forces — they do not always need to be solved away; they can become material for design. Backs the closing paragraph on productive tension.',
       links: [{ label: 'DRS paper ↗', url: 'https://dl.designresearchsociety.org/cgi/viewcontent.cgi?article=2829&context=drs-conference-papers' }],
       date: '2026-05-15',
-      x: 1700,
-      y: 1450,
+      x: 940,
+      y: 1780,
     },
     {
       id: 'src-space-between-stories',
@@ -496,8 +378,8 @@
       desc: 'The space between as a design space — frames the middle ground as a fragile relation where a project can begin before it becomes too fixed.',
       links: [{ label: 'DiVA full text ↗', url: 'https://www.diva-portal.org/smash/get/diva2%3A1404330/FULLTEXT01.pdf' }],
       date: '2026-05-15',
-      x: 2050,
-      y: 1450,
+      x: 640,
+      y: 1200,
     },
     {
       id: 'src-design-ambiguity',
@@ -506,8 +388,8 @@
       desc: 'Green & Lindley — uncertainty, instability, complexity, value conflict as legitimate research conditions. Methodological backbone for treating the middle ground analytically.',
       links: [{ label: 'EAD2021 paper ↗', url: 'https://designresearch.works/assets/papers/ead2021-design-and-ambiguity-green-lindley.pdf' }],
       date: '2026-05-15',
-      x: 2400,
-      y: 1450,
+      x: 680,
+      y: 600,
     },
     {
       id: 'src-embrace-opposites',
@@ -516,18 +398,8 @@
       desc: 'Interaction Design Foundation — opposites as a practical ideation method. Used to test how the polar structure of the zine can generate concrete design decisions.',
       links: [{ label: 'IxDF article ↗', url: 'https://www.interaction-design.org/literature/topics/embrace-opposites' }],
       date: '2026-05-15',
-      x: 2750,
-      y: 1450,
-    },
-    {
-      id: 'src-process-book',
-      title: 'Process Book (this canvas)',
-      phase: 'Research',
-      desc: 'Own process: mapping, visual tests, reflection. The infinite canvas you are looking at right now — primary evidence of the working method behind the zine.',
-      links: [{ label: 'Process book ↗', url: 'https://shkamp8-tech.github.io/contextual-01-processbook/' }],
-      date: '2026-05-15',
-      x: 1700,
-      y: 1800,
+      x: 840,
+      y: 320,
     },
     {
       id: 'src-tutor-peer-feedback',
@@ -536,8 +408,8 @@
       desc: 'Contextual 2B, Design Academy Eindhoven, 2026 — feedback moments treated as research evidence and refinement, not afterthought.',
       link: '',
       date: '2026-05-15',
-      x: 2050,
-      y: 1800,
+      x: 2060,
+      y: -20,
     },
     {
       id: 'src-apollonian-dionysian',
@@ -546,8 +418,8 @@
       desc: 'Nietzsche on art and the psyche — hidden background axis of the project: structure vs. chaos, measured vs. felt. Present in the zine without being named.',
       links: [{ label: 'Philosophy Break ↗', url: 'https://philosophybreak.com/articles/apollonian-and-dionysian-nietzsche-on-art-and-the-psyche/' }],
       date: '2026-05-15',
-      x: 2400,
-      y: 1800,
+      x: 780,
+      y: 1500,
     },
     {
       id: 'workshop-before-feedback',
@@ -556,8 +428,8 @@
       process: true,
       phase: 'Concepting',
       date: '2026-06-16',
-      x: 3100,
-      y: 200,
+      x: 2560,
+      y: -720,
       sections: [
         {
           heading: 'Purpose',
@@ -621,8 +493,8 @@
       id: 'workshop-poster',
       title: 'Workshop Poster — Sarrón Harfsterkamp',
       image: 'assets/workshop-poster.png',
-      x: 3700,
-      y: 950,
+      x: 4080,
+      y: -1940,
     },
     {
       id: 'workshop-framework',
@@ -630,8 +502,8 @@
       phase: 'Concepting',
       desc: 'The full framework for "The Point Between" workshop — purpose, core question, structure, audience, planning, theory and archiving. Click to read the entire document inside the book.',
       date: '2026-06-16',
-      x: 3100,
-      y: 950,
+      x: 4060,
+      y: 640,
       readMoreLabel: '📖 Read full framework',
       article: {
         kicker: 'Workshop · full framework',
@@ -782,12 +654,69 @@
         ]
       }
     },
+    {
+      id: 'card-1781655505158',
+      title: 'Unwritten Rules',
+      phase: 'Research',
+      x: 2680,
+      y: 680,
+    },
+    {
+      id: 'card-1781655584168',
+      title: 'Mediums',
+      phase: 'Research',
+      x: 1920,
+      y: 440,
+    },
   ];
 
   // Connections: [fromId, toId, fromSide, toSide]
   // sides: 'bottom', 'top', 'left', 'right'
-  // Cleared per user request — only cards & photos, no connecting lines.
-  const DEFAULT_CONNECTIONS = [];
+  const DEFAULT_CONNECTIONS = [
+    ['label-zine', 'zine-a3-page-01', 'right', 'left'],
+    ['label-zine', 'zine-a3-page-02', 'right', 'left'],
+    ['label-workshop', 'workshop-poster', 'right', 'left'],
+    ['label-workshop', 'workshop-framework', 'right', 'left'],
+    ['label-onderzoek', 'wordweb', 'left', 'right'],
+    ['wordweb', 'wordweb-preview', 'left', 'right'],
+    ['label-interview', 'src-mingus-interview', 'right', 'left'],
+    ['oldschool', 'wordweb-preview', 'right', 'left'],
+    ['oldschool', 'fascination-photo', 'right', 'left'],
+    ['fascination-photo', 'fascination', 'right', 'left'],
+    ['fascination-info', 'fascination-photo', 'left', 'right'],
+    ['fascination', 'label-onderzoek', 'right', 'left'],
+    ['workshop-before-feedback', 'label-workshop', 'right', 'left'],
+    ['spectre-tile', 'mediums', 'left', 'right'],
+    ['library-of-babel', 'mediums', 'left', 'right'],
+    ['mediums', 'label-onderzoek', 'left', 'right'],
+    ['theme', 'ted-simplifying-complexity', 'left', 'right'],
+    ['label-onderzoek', 'theme', 'bottom', 'top'],
+    ['label-onderzoek', 'label-interview', 'bottom', 'top'],
+    ['label-interview', 'interview-questions', 'right', 'left'],
+    ['interview-questions', 'interview-questions-info', 'right', 'left'],
+    ['porphyrius-tree', 'mediums', 'left', 'right'],
+    ['label-interview', 'label-zine', 'bottom', 'top'],
+    ['label-zine', 'label-workshop', 'bottom', 'top'],
+    ['interview-analysis', 'label-interview', 'right', 'left'],
+    ['zine-the-point-between', 'label-zine', 'right', 'left'],
+    ['visualisation-tools', 'label-onderzoek', 'left', 'right'],
+    ['label-onderzoek', 'conversation-notes', 'bottom', 'top'],
+    ['conversation-notes', 'label-interview', 'right', 'left'],
+    ['conversation-notes', 'label-zine', 'bottom', 'top'],
+    ['theme', 'zine-the-point-between', 'left', 'right'],
+    ['label-zine', 'src-tutor-peer-feedback', 'left', 'right'],
+    ['card-1781655505158', 'label-workshop', 'right', 'left'],
+    ['label-zine', 'card-1781655505158', 'bottom', 'top'],
+    ['label-zine', 'card-1781655584168', 'left', 'right'],
+    ['card-1781655584168', 'card-1781655505158', 'right', 'left'],
+    ['src-apollonian-dionysian', 'card-1781655584168', 'right', 'left'],
+    ['src-competing-demands', 'card-1781655584168', 'right', 'left'],
+    ['src-space-between-stories', 'card-1781655584168', 'right', 'left'],
+    ['src-liminal-design', 'card-1781655584168', 'right', 'left'],
+    ['src-embrace-opposites', 'card-1781655584168', 'right', 'left'],
+    ['src-ambiguity-resource', 'card-1781655584168', 'right', 'left'],
+    ['src-design-ambiguity', 'card-1781655584168', 'right', 'left'],
+  ];
 
   // ════════════════════════════════════════
   //  PERSISTENCE (localStorage)
@@ -845,13 +774,6 @@
           CARDS = state.cards || [];
           CONNECTIONS = state.connections || [];
           lastSyncedTimestamp = state.timestamp || 0;
-          // One-time wipe of all connections (user requested cards & photos only)
-          const CONNS_CLEARED_KEY = 'processbook_conns_cleared_v1';
-          let clearedConns = false;
-          if (!localStorage.getItem(CONNS_CLEARED_KEY)) {
-            if (CONNECTIONS.length) { CONNECTIONS = []; clearedConns = true; }
-            localStorage.setItem(CONNS_CLEARED_KEY, '1');
-          }
           // Merge in any NEW default cards that don't exist locally yet (non-destructive)
           const localIds = new Set(CARDS.map(c => c.id));
           let added = 0;
@@ -875,7 +797,7 @@
               addedConns++;
             }
           }
-          if (added || addedConns || clearedConns) { console.log('Added', added, 'new default cards,', addedConns, 'connections; clearedConns:', clearedConns); saveState(); }
+          if (added || addedConns) { console.log('Added', added, 'new default cards,', addedConns, 'connections'); saveState(); }
           console.log('Loaded:', CARDS.length, 'cards,', CONNECTIONS.length, 'connections');
           return;
         }
@@ -2310,23 +2232,28 @@
       status.textContent = (hasToken ? '✓ Token set' : '✗ No token') + ' · ' + (gid ? 'Gist linked' : 'No gist yet');
       menu.appendChild(status);
 
-      // Export positions — copy a compact list of every card/photo position
-      // so it can be pasted back into chat and committed to git directly.
-      menu.appendChild(mkBtn('📤  Export card positions (copy)', async () => {
-        const positions = CARDS.map(c => ({ id: c.id, x: Math.round(c.x), y: Math.round(c.y) }));
-        const text = 'POSITIONS v' + DATA_VERSION + '\n' + JSON.stringify(positions, null, 0);
+      // Export full layout (cards + connections) — copy to clipboard AND download
+      // a JSON file, so it can be pasted back into chat and committed to git directly.
+      menu.appendChild(mkBtn('📤  Export full layout (copy + download)', async () => {
+        const state = { cards: CARDS, connections: CONNECTIONS };
+        const text = JSON.stringify(state, null, 2);
         let copied = false;
+        try { await navigator.clipboard.writeText(text); copied = true; } catch (e) { /* clipboard blocked */ }
         try {
-          await navigator.clipboard.writeText(text);
-          copied = true;
-        } catch (e) { /* clipboard blocked — fall back to prompt */ }
-        // Always show a selectable prompt as a fallback / confirmation
-        window.prompt(
-          copied
-            ? '✓ Copied to clipboard! Paste it into the chat. (Shown here too if needed.)'
-            : 'Copy this text and paste it into the chat:',
-          text
-        );
+          const blob = new Blob([text], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'processbook-layout.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+        } catch (e) { /* download blocked */ }
+        alert((copied
+          ? '✓ Copied to clipboard + downloaded as processbook-layout.json.'
+          : '✓ Downloaded as processbook-layout.json.')
+          + '\nPaste the JSON (or the file content) into the chat so it can be pushed to git.');
       }));
 
       if (hasToken) {
