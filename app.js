@@ -319,15 +319,15 @@
       id: 'zine-a3-page-01',
       title: 'The Point Between — Zine (page 1)',
       image: 'assets/zine-a3-01.png',
-      x: 3540,
-      y: -3640,
+      x: 3560,
+      y: -1780,
     },
     {
       id: 'zine-a3-page-02',
       title: 'The Point Between — Zine (page 2)',
       image: 'assets/zine-a3-02.png',
-      x: 3540,
-      y: -3580,
+      x: 3560,
+      y: -1740,
     },
     // ── Research sources behind "The Point Between" ──
     {
@@ -428,8 +428,8 @@
       process: true,
       phase: 'Concepting',
       date: '2026-06-16',
-      x: 2560,
-      y: -720,
+      x: 2520,
+      y: -1420,
       sections: [
         {
           heading: 'Purpose',
@@ -493,8 +493,8 @@
       id: 'workshop-poster',
       title: 'Workshop Poster — Sarrón Harfsterkamp',
       image: 'assets/workshop-poster.png',
-      x: 4080,
-      y: -1940,
+      x: 4060,
+      y: -2740,
     },
     {
       id: 'workshop-framework',
