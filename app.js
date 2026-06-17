@@ -658,7 +658,7 @@
       id: 'card-1781655505158',
       title: 'Unwritten Rules',
       phase: 'Research',
-      desc: 'I chose unwritten rules as the starting point because they let people share opinions that can stand opposite each other, while staying away from politics. Everyone recognises them and can hold a strong opinion about them, yet they keep the conversation normal and open instead of heated. That tension between two sides — without becoming political or harmful — is exactly the kind of middle ground this research wants to explore.',
+      desc: 'Chosen as the starting point because they spark strong, opposing opinions while staying everyday and personal rather than political — so the conversation stays open. That safe tension between two sides is the middle ground this research explores.',
       x: 2680,
       y: 680,
     },
@@ -723,7 +723,7 @@
   //  PERSISTENCE (localStorage)
   // ════════════════════════════════════════
   const STORAGE_KEY = 'processbook_state';
-  const DATA_VERSION = 14; // do not bump unless intentionally wiping user data
+  const DATA_VERSION = 15; // bumped: git/code is now the source of truth (cloud sync disabled)
   // ── Cloud sync (GitHub Gist — reliable, requires personal access token with `gist` scope) ──
   // Token is stored per-device in localStorage. Never committed to repo.
   // First device creates the gist, gist ID is stored locally + in the gist content itself.
@@ -734,7 +734,9 @@
   const SYNC_POLL_MS = 60000; // pull from cloud every 60s (GitHub gist API has limits)
   const PUSH_DEBOUNCE_MS = 4000; // wait 4s after last edit before pushing
   let lastSyncedTimestamp = 0; // last timestamp we know about (local or remote)
-  let remoteSyncEnabled = true;
+  // Cloud sync is OFF: the layout is maintained directly in app.js and pushed to git.
+  // This prevents stale cloud data from periodically overwriting the local layout.
+  let remoteSyncEnabled = false;
   function getGistToken() { try { return localStorage.getItem(GIST_TOKEN_KEY) || ''; } catch (e) { return ''; } }
   function getGistId() { try { return localStorage.getItem(GIST_ID_KEY) || ''; } catch (e) { return ''; } }
   function setGistToken(t) { try { localStorage.setItem(GIST_TOKEN_KEY, t); } catch (e) {} }
@@ -887,6 +889,11 @@
   let rateLimitedUntil = 0; // epoch ms; sync paused until this time
   function isRateLimited() { return Date.now() < rateLimitedUntil; }
   function schedulePush(jsonString) {
+    if (!remoteSyncEnabled) {
+      // Cloud is off — we only persist to localStorage. Show a calm local-save status.
+      setSyncStatus('ok', 'Saved locally · ' + new Date().toLocaleTimeString());
+      return;
+    }
     pendingPushData = jsonString;
     if (pushTimer) clearTimeout(pushTimer);
     setSyncStatus('syncing', 'Saving… will sync in ' + Math.round(PUSH_DEBOUNCE_MS/1000) + 's');
@@ -2146,23 +2153,25 @@
   renderCards();
   resetView();
 
-  // ── Cloud sync: SAFE MODE — do NOT auto-pull on load (prevents bad data wiping local) ──
-  // Auto-pull only happens when explicitly clicking the ☁️ indicator,
-  // or after the user has actively saved (edit-mode exit). Periodic pull stays
-  // active but the safety check inside pullFromRemote() will refuse destructive pulls.
-  setSyncStatus('ok', 'Local mode. Click ☁️ to sync with cloud.');
-  // Show 🔑 if no token yet
-  if (!getGistToken()) {
+  // ── Cloud sync DISABLED: the layout lives in app.js and is pushed to git. ──
+  // No periodic pull/push, so the local layout can never be overwritten by stale cloud data.
+  setSyncStatus('ok', '💾 Local mode — layout is kept in git.');
+  if (!remoteSyncEnabled) {
     const el = document.getElementById('syncStatus');
-    if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '🔑'; el.title = 'Click to set up GitHub sync (one-time, paste token).'; }
+    if (el) { el.textContent = '💾'; el.title = 'Local mode. Layout is maintained in git (cloud sync off).'; }
+  } else {
+    // (legacy cloud path — only runs if remoteSyncEnabled is turned back on)
+    if (!getGistToken()) {
+      const el = document.getElementById('syncStatus');
+      if (el) { el.classList.remove('syncing','error','ok'); el.textContent = '🔑'; el.title = 'Click to set up GitHub sync (one-time, paste token).'; }
+    }
+    setInterval(() => {
+      if (!editMode) pullFromRemote();
+    }, SYNC_POLL_MS);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !editMode) pullFromRemote();
+    });
   }
-  setInterval(() => {
-    if (!editMode) pullFromRemote();
-  }, SYNC_POLL_MS);
-  // Pull when tab becomes visible again (still gated by safety check)
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && !editMode) pullFromRemote();
-  });
   // Click indicator: opens a touch-friendly menu (works on mobile + desktop)
   const syncEl = document.getElementById('syncStatus');
   if (syncEl) {
