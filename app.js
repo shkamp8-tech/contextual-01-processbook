@@ -2256,6 +2256,24 @@
           + '\nPaste the JSON (or the file content) into the chat so it can be pushed to git.');
       }));
 
+      // Remove every card that is not attached to any connection line.
+      menu.appendChild(mkBtn('🧹  Remove unconnected cards', async () => {
+        const connectedIds = new Set();
+        (CONNECTIONS || []).forEach(c => { connectedIds.add(c[0]); connectedIds.add(c[1]); });
+        const toRemove = CARDS.filter(c => !connectedIds.has(c.id));
+        if (toRemove.length === 0) {
+          alert('All cards are connected to a line — nothing to remove.');
+          return;
+        }
+        const names = toRemove.map(c => '• ' + (c.title || c.id)).join('\n');
+        if (!confirm('Remove ' + toRemove.length + ' card(s) that are not connected to any line?\n\n' + names)) return;
+        CARDS = CARDS.filter(c => connectedIds.has(c.id));
+        saveState();
+        renderCards();
+        updateMinimap();
+        alert('Removed ' + toRemove.length + ' unconnected card(s).');
+      }));
+
       if (hasToken) {
         menu.appendChild(mkBtn('☁️  Push now (save to cloud)', async () => {
           consecutiveFailures = 0;
