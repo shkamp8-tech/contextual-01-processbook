@@ -658,6 +658,7 @@
       id: 'card-1781655505158',
       title: 'Unwritten Rules',
       phase: 'Research',
+      desc: 'I chose unwritten rules as the starting point because they let people share opinions that can stand opposite each other, while staying away from politics. Everyone recognises them and can hold a strong opinion about them, yet they keep the conversation normal and open instead of heated. That tension between two sides — without becoming political or harmful — is exactly the kind of middle ground this research wants to explore.',
       x: 2680,
       y: 680,
     },
