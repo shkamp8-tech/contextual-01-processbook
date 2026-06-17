@@ -2257,6 +2257,48 @@
           + '\nPaste the JSON (or the file content) into the chat so it can be pushed to git.');
       }));
 
+      // Import a layout JSON file back into this browser (the missing half of Export).
+      menu.appendChild(mkBtn('📥  Import layout from file', async () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json,.json';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        input.addEventListener('change', () => {
+          const file = input.files && input.files[0];
+          if (!file) { document.body.removeChild(input); return; }
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const data = JSON.parse(String(reader.result));
+              const newCards = Array.isArray(data) ? data : data.cards;
+              if (!Array.isArray(newCards)) throw new Error('No "cards" array found in file.');
+              const newConns = Array.isArray(data.connections) ? data.connections : [];
+              if (!confirm('Replace the current layout with ' + newCards.length + ' cards and ' + newConns.length + ' connections from this file?')) {
+                document.body.removeChild(input);
+                return;
+              }
+              CARDS = newCards;
+              CONNECTIONS = newConns;
+              saveState();
+              renderCards();
+              updateMinimap();
+              alert('✓ Imported ' + newCards.length + ' cards and ' + newConns.length + ' connections.');
+            } catch (err) {
+              alert('Could not import: ' + (err && err.message ? err.message : 'invalid JSON file.'));
+            } finally {
+              if (input.parentNode) document.body.removeChild(input);
+            }
+          };
+          reader.onerror = () => {
+            alert('Could not read the file.');
+            if (input.parentNode) document.body.removeChild(input);
+          };
+          reader.readAsText(file);
+        });
+        input.click();
+      }));
+
       // Remove every card that is not attached to any connection line.
       menu.appendChild(mkBtn('🧹  Remove unconnected cards', async () => {
         const connectedIds = new Set();
