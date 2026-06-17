@@ -1565,11 +1565,11 @@
   let editingCardId = null; // null = new card
   let connFromId    = null; // for "connect from here"
 
-  editToggle.addEventListener('click', () => {
+  if (editToggle) editToggle.addEventListener('click', () => {
     editMode = !editMode;
     document.body.classList.toggle('editing-mode', editMode);
     editToggle.textContent = editMode ? '🔒 Lock' : '✏️ Edit';
-    [addCardBtn, addConnBtn, addImageBtn, exportBtn, resetBtn, restoreBtn].forEach(b => b.style.display = editMode ? '' : 'none');
+    [addCardBtn, addConnBtn, addImageBtn, exportBtn, resetBtn, restoreBtn].forEach(b => b && (b.style.display = editMode ? '' : 'none'));
     hideCtx();
     renderCards();
     if (!editMode) saveState();
@@ -1663,13 +1663,15 @@
   }
 
   // Button click → file picker
-  addImageBtn.addEventListener('click', () => {
-    imageFileInput.value = '';
-    imageFileInput.click();
-  });
-  imageFileInput.addEventListener('change', () => {
-    if (imageFileInput.files.length) handleImageFiles(imageFileInput.files);
-  });
+  if (addImageBtn && imageFileInput) {
+    addImageBtn.addEventListener('click', () => {
+      imageFileInput.value = '';
+      imageFileInput.click();
+    });
+    imageFileInput.addEventListener('change', () => {
+      if (imageFileInput.files.length) handleImageFiles(imageFileInput.files);
+    });
+  }
 
   // Drag & drop on viewport
   let dragCounter = 0;
@@ -2016,7 +2018,7 @@
   }
 
   // ── Add card modal ──
-  addCardBtn.addEventListener('click', () => openEditModal(null));
+  if (addCardBtn) addCardBtn.addEventListener('click', () => openEditModal(null));
 
   function openEditModal(id) {
     editingCardId = id;
@@ -2091,7 +2093,7 @@
   }
 
   // ── Connection modal ──
-  addConnBtn.addEventListener('click', openConnModal);
+  if (addConnBtn) addConnBtn.addEventListener('click', openConnModal);
 
   function openConnModal() {
     const opts = CARDS.map(c => `<option value="${sanitize(c.id)}">${sanitize(c.id)} – ${sanitize(c.title || c.id)}</option>`).join('');
@@ -2115,7 +2117,7 @@
   });
 
   // ── Export JSON (copy to clipboard) ──
-  exportBtn.addEventListener('click', () => {
+  if (exportBtn) exportBtn.addEventListener('click', () => {
     const out = {
       cards: CARDS.map(c => {
         const o = { ...c };
@@ -2141,14 +2143,14 @@
   });
 
   // Reset to defaults
-  resetBtn.addEventListener('click', () => {
+  if (resetBtn) resetBtn.addEventListener('click', () => {
     if (!confirm('Reset to default layout? Your custom positions and uploaded images will be lost.')) return;
     localStorage.removeItem(STORAGE_KEY);
     location.reload();
   });
 
   // Restore from local backup (undo last sync overwrite)
-  restoreBtn.addEventListener('click', () => {
+  if (restoreBtn) restoreBtn.addEventListener('click', () => {
     const backup = localStorage.getItem(STORAGE_KEY + '_backup');
     if (!backup) { alert('No local backup found.'); return; }
     let data;
